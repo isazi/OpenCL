@@ -47,15 +47,15 @@ public:
 	void allocateHostData(long long unsigned int nrElements);
 	void deleteHostData();
 	void allocateDeviceData(cl::Buffer *data, size_t size);
-	void allocateDeviceData(cl::Context *clContext) throw (OpenCLError);
-	void allocateDeviceData(cl::Context *clContext, long long unsigned int nrElements) throw (OpenCLError);
+	void allocateDeviceData(long long unsigned int nrElements) throw (OpenCLError);
+	void allocateDeviceData() throw (OpenCLError);
 	void deleteDeviceData();
 
-	void copyHostToDevice(cl::CommandQueue *clQueue) throw (OpenCLError);
-	void copyHostToDevice(cl::CommandQueue *clQueue, cl::Event *clEvent) throw (OpenCLError);
-	void copyDeviceToHost(cl::CommandQueue *clQueue) throw (OpenCLError);
-	void copyDeviceToHost(cl::CommandQueue *clQueue, cl::Event *clEvent) throw (OpenCLError);
+	void copyHostToDevice(bool async = false) throw (OpenCLError);
+	void copyDeviceToHost(bool async = false) throw (OpenCLError);
 
+	inline void setCLContext(cl::Context *context);
+	inline void setCLQueue(cl::CommandQueue *queue);
 	inline T *getHostData();
 	inline void *getRawHostData();
 	inline size_t getHostDataSize() const;
@@ -63,23 +63,26 @@ public:
 	inline size_t getDeviceDataSize() const;
 	inline string getName() const;
 
-	NSTimer		timerH2D;
-	NSTimer		timerD2H;
+	NSTimer timerH2D;
+	NSTimer	timerD2H;
 
 private:
-	bool 		deleteHost;
-	T 		*hostData;
-	size_t 		hostDataSize;
-	cl::Buffer 	*deviceData;
-	size_t 		deviceDataSize;
+	cl::Context *clContext;
+	cl::CommandQueue *clQueue;
 
-	string 		name;
+	bool deleteHost;
+	T *hostData;
+	size_t hostDataSize;
+	cl::Buffer *deviceData;
+	size_t deviceDataSize;
+
+	string name;
 };
 
 
 // Implementations
 
-template< typename T > GPUData< T >::GPUData(string name, bool deletePolicy) : name(name), deleteHost(deletePolicy), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), timerH2D(NSTimer(name + "_H2D", false, false)), timerD2H(NSTimer(name + "_D2H", false, false)) {}
+template< typename T > GPUData< T >::GPUData(string name, bool deletePolicy) : timerH2D(NSTimer(name + "_H2D", false, false)), timerD2H(NSTimer(name + "_D2H", false, false)), clContext(0), clQueue(0), deleteHost(deletePolicy), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
 
 
 template< typename T > GPUData< T >::~GPUData() {
@@ -126,20 +129,7 @@ template< typename T > void GPUData< T >::allocateDeviceData(cl::Buffer *data, s
 }
 
 
-template< typename T > void GPUData< T >::allocateDeviceData(cl::Context *clContext) throw (OpenCLError) {
-	deleteDeviceData();
-	
-	try {
-		deviceData = new cl::Buffer(*clContext, CL_MEM_READ_WRITE, hostDataSize, NULL, NULL);
-	}
-	catch ( cl::Error err ) {
-		throw  OpenCLError("Impossible to allocate " + name + " device memory: " + *(toString< cl_int >(err.err())));
-	}
-	deviceDataSize = hostDataSize;
-}
-
-
-template< typename T > void GPUData< T >::allocateDeviceData(cl::Context *clContext, long long unsigned int nrElements) throw (OpenCLError) {
+template< typename T > void GPUData< T >::allocateDeviceData(long long unsigned int nrElements) throw (OpenCLError) {
 	size_t newSize = nrElements * sizeof(T);
 	if ( newSize != deviceDataSize ) {
 		deleteDeviceData();
@@ -155,6 +145,19 @@ template< typename T > void GPUData< T >::allocateDeviceData(cl::Context *clCont
 }
 
 
+template< typename T > void GPUData< T >::allocateDeviceData() throw (OpenCLError) {
+	deleteDeviceData();
+	
+	try {
+		deviceData = new cl::Buffer(*clContext, CL_MEM_READ_WRITE, hostDataSize, NULL, NULL);
+	}
+	catch ( cl::Error err ) {
+		throw  OpenCLError("Impossible to allocate " + name + " device memory: " + *(toString< cl_int >(err.err())));
+	}
+	deviceDataSize = hostDataSize;
+}
+
+
 template< typename T > void GPUData< T >::deleteDeviceData() {
 	if ( deviceDataSize != 0 ) {
 		delete deviceData;
@@ -164,71 +167,74 @@ template< typename T > void GPUData< T >::deleteDeviceData() {
 }
 
 
-template< typename T > void GPUData< T >::copyHostToDevice(cl::CommandQueue *clQueue) throw (OpenCLError) {
-	cl::Event clEvent;
+template< typename T > void GPUData< T >::copyHostToDevice(bool async) throw (OpenCLError) {
+	if ( hostDataSize != deviceDataSize ) {
+		throw OpenCLError("Impossible to copy " + name + ": different memory sizes.");
+	}
+
+	if ( async ) {
+		try {
+			clQueue->enqueueWriteBuffer(*deviceData, CL_FALSE, 0, deviceDataSize, getRawHostData(), NULL, NULL);
+		}
+		catch ( cl::Error err ) {
+			throw OpenCLError("Impossible to copy " + name + " to device: " + *(toString< cl_int >(err.err())));
+		}
+	}
+	else {
+		cl::Event clEvent;
+
+		try {
+			timerH2D.start();
+			clQueue->enqueueWriteBuffer(*deviceData, CL_TRUE, 0, deviceDataSize, getRawHostData(), NULL, &clEvent);
+			clEvent.wait();
+			timerH2D.stop();
+		}
+		catch ( cl::Error err ) {
+			timerH2D.reset();
+			throw OpenCLError("Impossible to copy " + name + " to device: " + *(toString< cl_int >(err.err())));
+		}
+	}
+}
+
+
+template< typename T > void GPUData< T >::copyDeviceToHost(bool async) throw (OpenCLError) {
+	if ( hostDataSize != deviceDataSize ) {
+		throw OpenCLError("Impossible to copy " + name + ": different memory sizes.");
+	}
+
+	if ( async ) {
+		try {
+			clQueue->enqueueReadBuffer(*deviceData, CL_FALSE, 0, hostDataSize, getRawHostData(), NULL, clEvent);
+		}
+		catch ( cl::Error err ) {
+			throw OpenCLError("Impossible to copy " + name + " to host: " + *(toString< cl_int >(err.err())));
+		}
+	}
+	else {
+		cl::Event clEvent;
+
+		try {
+			timerD2H.start();
+			clQueue->enqueueReadBuffer(*deviceData, CL_TRUE, 0, hostDataSize, getRawHostData(), NULL, &clEvent);
+			clEvent.wait();
+			timerD2H.stop();
+		}
+		catch ( cl::Error err ) {
+			timerD2H.reset();
+			throw OpenCLError("Impossible to copy " + name + " to host: " + *(toString< cl_int >(err.err())));
+		}
+	}
+
+}
+
+
+template< typename T > inline void *GPUData< T >::setCLContext(cl::Context *context) {
+	clContext = context;
+}
+
 	
-	if ( hostDataSize != deviceDataSize ) {
-		throw OpenCLError("Impossible to copy " + name + ": different memory sizes.");
-	}
-
-	timerH2D.start();
-	try {
-		clQueue->enqueueWriteBuffer(*deviceData, CL_TRUE, 0, deviceDataSize, getRawHostData(), NULL, &clEvent);
-		clEvent.wait();
-	}
-	catch ( cl::Error err ) {
-		timerH2D.stop();
-		throw OpenCLError("Impossible to copy " + name + " to device: " + *(toString< cl_int >(err.err())));
-	}
-	timerH2D.stop();
-}
-
-
-template< typename T > void GPUData< T >::copyHostToDevice(cl::CommandQueue *clQueue, cl::Event *clEvent) throw (OpenCLError) {
-	if ( hostDataSize != deviceDataSize ) {
-		throw OpenCLError("Impossible to copy " + name + ": different memory sizes.");
-	}
-
-	try {
-		clQueue->enqueueWriteBuffer(*deviceData, CL_FALSE, 0, deviceDataSize, getRawHostData(), NULL, clEvent);
-	}
-	catch ( cl::Error err ) {
-		throw OpenCLError("Impossible to copy " + name + " to device: " + *(toString< cl_int >(err.err())));
-	}
-}
-
-
-template< typename T > void GPUData< T >::copyDeviceToHost(cl::CommandQueue *clQueue) throw (OpenCLError) {
-	cl::Event clEvent;
-
-	if ( hostDataSize != deviceDataSize ) {
-		throw OpenCLError("Impossible to copy " + name + ": different memory sizes.");
-	}
-
-	timerD2H.start();
-	try {
-		clQueue->enqueueReadBuffer(*deviceData, CL_TRUE, 0, hostDataSize, getRawHostData(), NULL, &clEvent);
-		clEvent.wait();
-	}
-	catch ( cl::Error err ) {
-		timerD2H.stop();
-		throw OpenCLError("Impossible to copy " + name + " to host: " + *(toString< cl_int >(err.err())));
-	}
-	timerD2H.stop();
-}
-
-
-template< typename T > void GPUData< T >::copyDeviceToHost(cl::CommandQueue *clQueue, cl::Event *clEvent) throw (OpenCLError) {
-	if ( hostDataSize != deviceDataSize ) {
-		throw OpenCLError("Impossible to copy " + name + ": different memory sizes.");
-	}
-
-	try {
-		clQueue->enqueueReadBuffer(*deviceData, CL_FALSE, 0, hostDataSize, getRawHostData(), NULL, clEvent);
-	}
-	catch ( cl::Error err ) {
-		throw OpenCLError("Impossible to copy " + name + " to host: " + *(toString< cl_int >(err.err())));
-	}
+template< typename T > inline void *GPUData::setCLQueue(cl::CommandQueue *queue) {
+	clQueue = queue;
 }
 
 
