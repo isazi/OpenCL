@@ -228,12 +228,12 @@ template< typename T > void GPUData< T >::copyDeviceToHost(bool async) throw (Op
 }
 
 
-template< typename T > inline void *GPUData< T >::setCLContext(cl::Context *context) {
+template< typename T > inline void GPUData< T >::setCLContext(cl::Context *context) {
 	clContext = context;
 }
 
 	
-template< typename T > inline void *GPUData< T >::setCLQueue(cl::CommandQueue *queue) {
+template< typename T > inline void GPUData< T >::setCLQueue(cl::CommandQueue *queue) {
 	clQueue = queue;
 }
 
