@@ -204,7 +204,7 @@ template< typename T > void GPUData< T >::copyDeviceToHost(bool async) throw (Op
 
 	if ( async ) {
 		try {
-			clQueue->enqueueReadBuffer(*deviceData, CL_FALSE, 0, hostDataSize, getRawHostData(), NULL, clEvent);
+			clQueue->enqueueReadBuffer(*deviceData, CL_FALSE, 0, hostDataSize, getRawHostData(), NULL, NULL);
 		}
 		catch ( cl::Error err ) {
 			throw OpenCLError("Impossible to copy " + name + " to host: " + *(toString< cl_int >(err.err())));
@@ -233,7 +233,7 @@ template< typename T > inline void *GPUData< T >::setCLContext(cl::Context *cont
 }
 
 	
-template< typename T > inline void *GPUData::setCLQueue(cl::CommandQueue *queue) {
+template< typename T > inline void *GPUData< T >::setCLQueue(cl::CommandQueue *queue) {
 	clQueue = queue;
 }
 
