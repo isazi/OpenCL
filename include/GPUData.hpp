@@ -136,7 +136,7 @@ template< typename T > void GPUData< T >::allocateDeviceData(long long unsigned 
 		deleteDeviceData();
 
 		try {
-			if ( devReadOnly ) {
+			if ( deviceReadOnly ) {
 				deviceData = new cl::Buffer(*clContext, CL_MEM_READ_ONLY, newSize, NULL, NULL);
 			}
 			else {
