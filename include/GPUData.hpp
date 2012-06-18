@@ -40,7 +40,7 @@ namespace OpenCL {
 
 template< typename T > class GPUData {
 public:
-	GPUData(string name, bool deletePolicy = false);
+	GPUData(string name, bool deletePolicy = false, bool devRO = false);
 	~GPUData();
 
 	void allocateHostData(T *data, size_t size);
@@ -71,6 +71,7 @@ private:
 	cl::CommandQueue *clQueue;
 
 	bool deleteHost;
+	bool deviceReadOnly;
 	T *hostData;
 	size_t hostDataSize;
 	cl::Buffer *deviceData;
@@ -82,7 +83,7 @@ private:
 
 // Implementations
 
-template< typename T > GPUData< T >::GPUData(string name, bool deletePolicy) : timerH2D(NSTimer(name + "_H2D", false, false)), timerD2H(NSTimer(name + "_D2H", false, false)), clContext(0), clQueue(0), deleteHost(deletePolicy), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
+template< typename T > GPUData< T >::GPUData(string name, bool deletePolicy, bool devRO) : timerH2D(NSTimer(name + "_H2D", false, false)), timerD2H(NSTimer(name + "_D2H", false, false)), clContext(0), clQueue(0), deleteHost(deletePolicy), deviceReadOnly(devRO), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
 
 
 template< typename T > GPUData< T >::~GPUData() {
@@ -135,7 +136,12 @@ template< typename T > void GPUData< T >::allocateDeviceData(long long unsigned 
 		deleteDeviceData();
 
 		try {
-			deviceData = new cl::Buffer(*clContext, CL_MEM_READ_WRITE, newSize, NULL, NULL);
+			if ( devRO ) {
+				deviceData = new cl::Buffer(*clContext, CL_MEM_READ_ONLY, newSize, NULL, NULL);
+			}
+			else {
+				deviceData = new cl::Buffer(*clContext, CL_MEM_READ_WRITE, newSize, NULL, NULL);
+			}
 		}
 		catch ( cl::Error err ) {
 			throw  OpenCLError("Impossible to allocate " + name + " device memory: " + *(toString< cl_int >(err.err())));
@@ -149,7 +155,12 @@ template< typename T > void GPUData< T >::allocateDeviceData() throw (OpenCLErro
 	deleteDeviceData();
 	
 	try {
-		deviceData = new cl::Buffer(*clContext, CL_MEM_READ_WRITE, hostDataSize, NULL, NULL);
+		if ( devRO ) {
+			deviceData = new cl::Buffer(*clContext, CL_MEM_READ_ONLY, hostDataSize, NULL, NULL);
+		}
+		else {
+			deviceData = new cl::Buffer(*clContext, CL_MEM_READ_WRITE, hostDataSize, NULL, NULL);
+		}
 	}
 	catch ( cl::Error err ) {
 		throw  OpenCLError("Impossible to allocate " + name + " device memory: " + *(toString< cl_int >(err.err())));
