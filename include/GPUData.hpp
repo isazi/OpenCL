@@ -136,7 +136,7 @@ template< typename T > void GPUData< T >::allocateDeviceData(long long unsigned 
 		deleteDeviceData();
 
 		try {
-			if ( devRO ) {
+			if ( devReadOnly ) {
 				deviceData = new cl::Buffer(*clContext, CL_MEM_READ_ONLY, newSize, NULL, NULL);
 			}
 			else {
@@ -155,7 +155,7 @@ template< typename T > void GPUData< T >::allocateDeviceData() throw (OpenCLErro
 	deleteDeviceData();
 	
 	try {
-		if ( devRO ) {
+		if ( deviceReadOnly ) {
 			deviceData = new cl::Buffer(*clContext, CL_MEM_READ_ONLY, hostDataSize, NULL, NULL);
 		}
 		else {
