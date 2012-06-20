@@ -95,6 +95,7 @@ template< typename T > void Memset< T >::compile(cl::Context *clContext, cl::Dev
 	delete clProgram;
 }
 
+
 template< typename T > void Memset< T >::run(T value, GPUData< T > *memory) throw (OpenCLError) {
 	if ( kernel == 0 ) {
 		throw OpenCLError("First generate the kernel.");
@@ -111,6 +112,11 @@ template< typename T > void Memset< T >::run(T value, GPUData< T > *memory) thro
 		string err_s = toStringValue< cl_int >(err.err());
 		throw OpenCLError("Impossible to run Memset: " + err_s + ".");
 	}
+}
+
+
+template< typename T > inline void setCLQueue(cl::CommandQueue *queue) {
+	clCommands = queue;
 }
 
 } // OpenCL
