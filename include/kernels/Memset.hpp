@@ -115,7 +115,7 @@ template< typename T > void Memset< T >::run(T value, GPUData< T > *memory) thro
 }
 
 
-template< typename T > inline void setCLQueue(cl::CommandQueue *queue) {
+template< typename T > inline void Memset< T >::setCLQueue(cl::CommandQueue *queue) {
 	clCommands = queue;
 }
 
