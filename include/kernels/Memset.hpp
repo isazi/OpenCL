@@ -21,6 +21,8 @@
 #include <CL/cl.hpp>
 #include <string>
 using std::string;
+#include <utility>
+using std::make_pair;
 
 #include <GPUData.hpp>
 using isa::OpenCL::GPUData;
