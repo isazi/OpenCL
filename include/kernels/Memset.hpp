@@ -72,25 +72,27 @@ template< typename T > void Memset< T >::compile(cl::Context *clContext, cl::Dev
 
 	string code = "__kernel void Memset(" + dataType + " value, __global " + dataType + " *mem) {\nmem[get_global_id(0)] = value;\n}";
 
+	cl::Program *clProgram = 0;
 	try {
 		cl::Program::Sources sources(1, make_pair(code.c_str(), code.length()));
-		cl::Program clProgram = cl::Program(*clContext, sources);
-		clProgram.build(vector< cl::Device >(1, *clDevice));
+		clProgram = new cl::Program(*clContext, sources);
+		clProgram->build(vector< cl::Device >(1, *clDevice));
 	}
 	catch ( cl::Error err ) {
-		throw OpenCLError("It is not possible to build the Memset OpenCL program: " + clProgram.getBuildInfo< CL_PROGRAM_BUILD_LOG >(*clDevice) + ".");
+		throw OpenCLError("It is not possible to build the Memset OpenCL program: " + clProgram->getBuildInfo< CL_PROGRAM_BUILD_LOG >(*clDevice) + ".");
 	}
 
 	if ( kernel != 0 ) {
 		delete kernel;
 	}
 	try {
-		kernel = new cl::Kernel(clProgram, "Memset", NULL);
+		kernel = new cl::Kernel(*clProgram, "Memset", NULL);
 	}
 	catch ( cl::Error err ) {
 		string err_s = toStringValue< cl_int >(err.err());
 		throw OpenCLError("It is not possible to create the kernel for Memset: " + err_s + ".");
 	}
+	delete clProgram;
 }
 
 template< typename T > void Memset< T >::run(T value, GPUData< T > *memory) throw (OpenCLError) {
