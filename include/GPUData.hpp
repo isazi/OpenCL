@@ -62,13 +62,15 @@ public:
 	inline cl::Buffer *getDeviceData();
 	inline size_t getDeviceDataSize() const;
 	inline string getName() const;
+	inline double getH2DTime() const;
+	inline double getD2HTime() const;
 
-	NSTimer timerH2D;
-	NSTimer	timerD2H;
 
 private:
 	cl::Context *clContext;
 	cl::CommandQueue *clQueue;
+	NSTimer timerH2D;
+	NSTimer	timerD2H;
 
 	bool deleteHost;
 	bool deviceReadOnly;
@@ -83,7 +85,7 @@ private:
 
 // Implementations
 
-template< typename T > GPUData< T >::GPUData(string name, bool deletePolicy, bool devRO) : timerH2D(NSTimer(name + "_H2D", false, false)), timerD2H(NSTimer(name + "_D2H", false, false)), clContext(0), clQueue(0), deleteHost(deletePolicy), deviceReadOnly(devRO), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
+template< typename T > GPUData< T >::GPUData(string name, bool deletePolicy, bool devRO) : clContext(0), clQueue(0), timerH2D(NSTimer(name + "_H2D", false, false)), timerD2H(NSTimer(name + "_D2H", false, false)), deleteHost(deletePolicy), deviceReadOnly(devRO), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
 
 
 template< typename T > GPUData< T >::~GPUData() {
@@ -276,6 +278,16 @@ template< typename T > inline size_t GPUData< T >::getDeviceDataSize() const {
 
 template< typename T > inline string GPUData< T >::getName() const {
 	return name;
+}
+
+	
+template< typename T > inline double GPUData< T >::getH2DTime() const {
+	return timerH2D.getElapsed();
+}
+
+
+template< typename T > inline double GPUData< T >::getD2HTime() const {
+	return timerD2H.getElapsed();
 }
 
 } // OpenCL
