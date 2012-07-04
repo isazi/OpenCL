@@ -23,7 +23,7 @@
 using std::vector;
 
 #include <utils.hpp>
-using isa::utils::toString;
+using isa::utils::toStringValue;
 #include <Exceptions.hpp>
 using isa::Exceptions::OpenCLError;
 
@@ -35,27 +35,26 @@ namespace isa {
 
 namespace OpenCL {
 
-void initializeOpenCL(unsigned int platform, bool gpu, vector< cl::Platform > *platforms, cl::Context *context, vector< cl::Device > *devices, vector< cl::CommandQueue > *queues) throw (OpenCLError) {
+void initializeOpenCL(unsigned int platform, unsigned int nrQueues, vector< cl::Platform > *platforms, cl::Context *context, vector< cl::Device > *devices, vector< vector< cl::CommandQueue > > *queues) throw (OpenCLError) {
 	try {
 		unsigned int nrDevices = 0;
 		
 		cl::Platform::get(platforms);
 		cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms->at(platform))(), 0};
-		if ( gpu ) {
-			*context = cl::Context(CL_DEVICE_TYPE_GPU, properties);
-		}
-		else {
-			*context = cl::Context(CL_DEVICE_TYPE_CPU, properties);
-		}
+		*context = cl::Context(CL_DEVICE_TYPE_ALL, properties);
 
 		*devices = context->getInfo<CL_CONTEXT_DEVICES>();
 		nrDevices = devices->size();
 		for ( unsigned int device = 0; device < nrDevices; device++ ) {
-			queues->push_back(cl::CommandQueue(*context, devices->at(device)));;
+			queues->push_back(vector< cl::CommandQueue >());
+			for ( unsigned int queue = 0; queue < nrQueues; queue++ ) {
+				(queues->at(device)).push_back(cl::CommandQueue(*context, devices->at(device)));;
+			}
 		}
 	}
 	catch ( cl::Error e ) {
-		throw OpenCLError("Impossible to initialize OpenCL: " + *(toString< cl_int >(e.err())));
+		string err_s = toStringValue< cl_int >(e.err());
+		throw OpenCLError("Impossible to initialize OpenCL: " + err_s + ".");
 	}
 }
 
