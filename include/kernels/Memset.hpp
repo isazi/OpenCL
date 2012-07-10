@@ -41,7 +41,7 @@ namespace isa {
 
 namespace OpenCL {
 
-template < typename T > class Memset : public Kernel {
+template < typename T > class Memset : public Kernel< T > {
 public:
 	Memset(string dataType);
 	~Memset();
@@ -80,10 +80,11 @@ template< typename T > void Memset< T >::compile(cl::Context &clContext, cl::Dev
 template< typename T > void Memset< T >::run(T value, GPUData< T > *memory) throw (OpenCLError) {
 
 	cl::NDRange globalSize(memory->getDeviceDataSize() / sizeof(T));
-	Kernel< T >::setArgument< T >(0, value);
-	Kernel< T >::setArgument< cl::Buffer >(1, *(memory->getDeviceData()));
+	cl::NDRange localSize(cl::NullRange);
+	Kernel< T >::setArgument(0, value);
+	Kernel< T >::setArgument(1, *(memory->getDeviceData()));
 
-	Kernel< T >::run(true, globalSize, cl::NullRange);
+	Kernel< T >::run(true, globalSize, localSize);
 }
 
 

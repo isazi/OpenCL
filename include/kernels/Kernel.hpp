@@ -105,7 +105,7 @@ template< typename T > void Kernel< T >::compile(cl::Context &clContext, cl::Dev
 }
 
 	
-template< typename T > template< typename A > inline Kernel< T >::setArgument< A >(unsigned int id, A param) throw (OpenCLError) {
+template< typename T > template< typename A > inline void Kernel< T >::setArgument(unsigned int id, A param) throw (OpenCLError) {
 	if ( kernel == 0 ) {
 		throw OpenCLError("First generate the kernel for " + name + ".");
 	}
