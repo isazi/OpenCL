@@ -46,7 +46,7 @@ public:
 	~Kernel();
 	
 	void compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *queue, string &code) throw (OpenCLError);
-	template< typename A > inline setArgument(unsigned int id, A param) throw (OpenCLError);
+	template< typename A > inline void setArgument(unsigned int id, A param) throw (OpenCLError);
 	void run(bool async, cl::NDRange &globalSize, cl::NDRange &localSize) throw (OpenCLError);
 
 
@@ -67,17 +67,17 @@ private:
 
 // Implementation
 
-template< typename T > Kernel::Kernel(string name, string dataType) : name(name), dataType(dataType), buildLog(string()), kernel(0), clCommands(0), timer(NSTimer(name, false, false)) {}
+template< typename T > Kernel< T >::Kernel(string name, string dataType) : name(name), dataType(dataType), buildLog(string()), kernel(0), clCommands(0), timer(NSTimer(name, false, false)) {}
 
 
-template< typename T > Kernel::~Kernel() {
+template< typename T > Kernel< T >::~Kernel() {
 	if ( kernel != 0 ) {
 		delete kernel;
 	}
 }
 
 
-template< typename T > void Kernel::compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *queue, string &code) throw (OpenCLError) {
+template< typename T > void Kernel< T >::compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *queue, string &code) throw (OpenCLError) {
 	clCommands = queue;
 
 	cl::Program *program;
@@ -105,7 +105,7 @@ template< typename T > void Kernel::compile(cl::Context &clContext, cl::Device &
 }
 
 	
-template< typename T, typename A > inline Kernel::setArgument(unsigned int id, A param) throw (OpenCLError) {
+template< typename T, typename A > inline Kernel< T >::setArgument< A >(unsigned int id, A param) throw (OpenCLError) {
 	if ( kernel == 0 ) {
 		throw OpenCLError("First generate the kernel for " + name + ".");
 	}
@@ -119,7 +119,7 @@ template< typename T, typename A > inline Kernel::setArgument(unsigned int id, A
 }
 
 
-template< typename T > void Kernel::run(bool async, cl::NDRange &globalSize, cl::NDRange &localSize) throw (OpenCLError) {
+template< typename T > void Kernel< T >::run(bool async, cl::NDRange &globalSize, cl::NDRange &localSize) throw (OpenCLError) {
 	if ( kernel == 0 ) {
 		throw OpenCLError("First generate the kernel for " + name + ".");
 	}
@@ -150,22 +150,22 @@ template< typename T > void Kernel::run(bool async, cl::NDRange &globalSize, cl:
 }
 
 	
-template< typename T > inline string Kernel::getName() const {
+template< typename T > inline string Kernel< T >::getName() const {
 	return name;
 }
 
 
-template< typename T > inline string Kernel::getDataType() const {
+template< typename T > inline string Kernel< T >::getDataType() const {
 	return dataType;
 }
 
 
-template< typename T > inline string Kernel::getBuildLog() const {
+template< typename T > inline string Kernel< T >::getBuildLog() const {
 	return buildLog;
 }
 
 
-template< typename T > inline double Kernel::getTime() const {
+template< typename T > inline double Kernel< T >::getTime() const {
 	return timer.getElapsed();
 }
 
