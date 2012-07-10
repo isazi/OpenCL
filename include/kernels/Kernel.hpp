@@ -61,13 +61,14 @@ private:
 	string buildLog;
 	cl::Kernel *kernel;
 	cl::CommandQueue *clCommands;
+	cl::Event clEvent;
 	NSTimer timer;
 };
 
 
 // Implementation
 
-template< typename T > Kernel< T >::Kernel(string name, string dataType) : name(name), dataType(dataType), buildLog(string()), kernel(0), clCommands(0), timer(NSTimer(name, false, false)) {}
+template< typename T > Kernel< T >::Kernel(string name, string dataType) : name(name), dataType(dataType), buildLog(string()), kernel(0), clCommands(0), clEvent(cl::Event()), timer(NSTimer(name, false, false)) {}
 
 
 template< typename T > Kernel< T >::~Kernel() {
@@ -133,8 +134,6 @@ template< typename T > void Kernel< T >::run(bool async, cl::NDRange &globalSize
 		}
 	}
 	else {
-		cl::Event clEvent;
-
 		try {
 			timer.start();
 			clCommands->enqueueNDRangeKernel(*kernel, cl::NullRange, globalSize, localSize, NULL, &clEvent);
