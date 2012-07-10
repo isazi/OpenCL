@@ -56,7 +56,7 @@ private:
 
 // Implementation
 
-template< typename T > Memset< T >::Memset() : Kernel("Memset", dataType), code(0) {}
+template< typename T > Memset< T >::Memset(string dataType) : Kernel< T >("Memset", dataType), code(0) {}
 
 
 template< typename T > Memset< T >::~Memset() {
@@ -71,19 +71,19 @@ template< typename T > void Memset< T >::compile(cl::Context &clContext, cl::Dev
 		delete code;
 	}
 	code = new string();
-	*code = "__kernel void " + getName() + "(" + getDataType() + " value, __global " + getDataType() + " *mem) {\nmem[get_global_id(0)] = value;\n}";
+	*code = "__kernel void " + Kernel< T >::getName() + "(" + Kernel< T >::getDataType() + " value, __global " + Kernel< T >::getDataType() + " *mem) {\nmem[get_global_id(0)] = value;\n}";
 
-	Kernel::compile(clContext, clDevice, clCommands, *code);
+	Kernel< T >::compile(clContext, clDevice, clCommands, *code);
 }
 
 
 template< typename T > void Memset< T >::run(T value, GPUData< T > *memory) throw (OpenCLError) {
 
 	cl::NDRange globalSize(memory->getDeviceDataSize() / sizeof(T));
-	setArgument< T >(0, value);
-	setArgument< cl::Buffer >(1, *(memory->getDeviceData()));
+	Kernel< T >::setArgument< T >(0, value);
+	Kernel< T >::setArgument< cl::Buffer >(1, *(memory->getDeviceData()));
 
-	Kernel::run(true, globalSize, cl::NullRange);
+	Kernel< T >::run(true, globalSize, cl::NullRange);
 }
 
 
