@@ -24,6 +24,8 @@ using std::string;
 #include <utility>
 using std::make_pair;
 
+#include <kernels/Kernel.hpp>
+using isa::OpenCL::Kernel;
 #include <GPUData.hpp>
 using isa::OpenCL::GPUData;
 #include <Exceptions.hpp>
@@ -39,85 +41,51 @@ namespace isa {
 
 namespace OpenCL {
 
-template < typename T > class Memset {
+template < typename T > class Memset : public Kernel {
 public:
 	Memset(string dataType);
 	~Memset();
 
-	void compile(cl::Context *clContext, cl::Device *clDevice) throw (OpenCLError);
+	void compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *clCommands) throw (OpenCLError);
 	void run(T value, GPUData< T > *memory) throw (OpenCLError);
-
-	inline void setCLQueue(cl::CommandQueue *queue);
 	
 private:
-	string dataType;
-	cl::Kernel *kernel;
-	cl::CommandQueue *clCommands;
+	string *code;
 };
 
 
 // Implementation
 
-template< typename T > Memset< T >::Memset(string dataType) : dataType(dataType), kernel(0), clCommands(0) {}
+template< typename T > Memset< T >::Memset() : Kernel("Memset", dataType), code(0) {}
 
 
 template< typename T > Memset< T >::~Memset() {
-	if ( kernel != 0 ) {
-		delete kernel;
+	if ( code != 0 ) {
+		delete code;
 	}
 }
 
 
-template< typename T > void Memset< T >::compile(cl::Context *clContext, cl::Device *clDevice) throw (OpenCLError) {
+template< typename T > void Memset< T >::compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *clCommands) throw (OpenCLError) {
+	if ( code != 0 ) {
+		delete code;
+	}
+	code = new string();
+	*code = "__kernel void " + getName() + "(" + getDataType() + " value, __global " + getDataType() + " *mem) {\nmem[get_global_id(0)] = value;\n}";
 
-	string code = "__kernel void Memset(" + dataType + " value, __global " + dataType + " *mem) {\nmem[get_global_id(0)] = value;\n}";
-
-	cl::Program *clProgram = 0;
-	try {
-		cl::Program::Sources sources(1, make_pair(code.c_str(), code.length()));
-		clProgram = new cl::Program(*clContext, sources);
-		clProgram->build(vector< cl::Device >(1, *clDevice));
-	}
-	catch ( cl::Error err ) {
-		throw OpenCLError("It is not possible to build the Memset OpenCL program: " + clProgram->getBuildInfo< CL_PROGRAM_BUILD_LOG >(*clDevice) + ".");
-	}
-
-	if ( kernel != 0 ) {
-		delete kernel;
-	}
-	try {
-		kernel = new cl::Kernel(*clProgram, "Memset", NULL);
-	}
-	catch ( cl::Error err ) {
-		string err_s = toStringValue< cl_int >(err.err());
-		throw OpenCLError("It is not possible to create the kernel for Memset: " + err_s + ".");
-	}
-	delete clProgram;
+	Kernel::compile(clContext, clDevice, clCommands, *code);
 }
 
 
 template< typename T > void Memset< T >::run(T value, GPUData< T > *memory) throw (OpenCLError) {
-	if ( kernel == 0 ) {
-		throw OpenCLError("First generate the kernel.");
-	}
 
 	cl::NDRange globalSize(memory->getDeviceDataSize() / sizeof(T));
-	kernel->setArg(0, value);
-	kernel->setArg(1, *(memory->getDeviceData()));
-	
-	try {
-		clCommands->enqueueNDRangeKernel(*kernel, cl::NullRange, globalSize, cl::NullRange, NULL, NULL);
-	}
-	catch ( cl::Error err ) {
-		string err_s = toStringValue< cl_int >(err.err());
-		throw OpenCLError("Impossible to run Memset: " + err_s + ".");
-	}
+	setArgument< T >(0, value);
+	setArgument< cl::Buffer >(1, *(memory->getDeviceData()));
+
+	Kernel::run(true, globalSize, cl::NullRange);
 }
 
-
-template< typename T > inline void Memset< T >::setCLQueue(cl::CommandQueue *queue) {
-	clCommands = queue;
-}
 
 } // OpenCL
 } // isa
