@@ -74,6 +74,7 @@ template< typename T > void Memset< T >::compile(cl::Context &clContext, cl::Dev
 	*code = "__kernel void " + Kernel< T >::getName() + "(" + Kernel< T >::getDataType() + " value, __global " + Kernel< T >::getDataType() + " *mem) {\nmem[get_global_id(0)] = value;\n}";
 
 	Kernel< T >::compile(clContext, clDevice, clCommands, *code);
+	Kernel< T >::setAsync(true);
 }
 
 
@@ -84,7 +85,7 @@ template< typename T > void Memset< T >::run(T value, GPUData< T > *memory) thro
 	Kernel< T >::setArgument(0, value);
 	Kernel< T >::setArgument(1, *(memory->getDeviceData()));
 
-	Kernel< T >::run(true, globalSize, localSize);
+	Kernel< T >::run(globalSize, localSize);
 }
 
 

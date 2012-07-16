@@ -47,8 +47,9 @@ public:
 	
 	void compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *queue, string &code) throw (OpenCLError);
 	template< typename A > inline void setArgument(unsigned int id, A param) throw (OpenCLError);
-	void run(bool async, cl::NDRange &globalSize, cl::NDRange &localSize) throw (OpenCLError);
+	void run(cl::NDRange &globalSize, cl::NDRange &localSize) throw (OpenCLError);
 
+	inline setAsync(bool asy);
 
 	inline string getName() const;
 	inline string getDataType() const;
@@ -56,6 +57,7 @@ public:
 	inline double getTime() const;
 
 private:
+	bool async;
 	string name;
 	string dataType;
 	string buildLog;
@@ -120,7 +122,7 @@ template< typename T > template< typename A > inline void Kernel< T >::setArgume
 }
 
 
-template< typename T > void Kernel< T >::run(bool async, cl::NDRange &globalSize, cl::NDRange &localSize) throw (OpenCLError) {
+template< typename T > void Kernel< T >::run(cl::NDRange &globalSize, cl::NDRange &localSize) throw (OpenCLError) {
 	if ( kernel == 0 ) {
 		throw OpenCLError("First generate the kernel for " + name + ".");
 	}
@@ -148,7 +150,12 @@ template< typename T > void Kernel< T >::run(bool async, cl::NDRange &globalSize
 	}
 }
 
-	
+
+template< typename T > inline void Kernel< T >::setAsync(bool asy) {
+	async = asy;
+}
+
+
 template< typename T > inline string Kernel< T >::getName() const {
 	return name;
 }
