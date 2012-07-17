@@ -49,7 +49,7 @@ public:
 	template< typename A > inline void setArgument(unsigned int id, A param) throw (OpenCLError);
 	void run(cl::NDRange &globalSize, cl::NDRange &localSize) throw (OpenCLError);
 
-	inline setAsync(bool asy);
+	inline void setAsync(bool asy);
 
 	inline string getName() const;
 	inline string getDataType() const;
