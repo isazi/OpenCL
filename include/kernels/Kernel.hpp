@@ -70,7 +70,7 @@ private:
 
 // Implementation
 
-template< typename T > Kernel< T >::Kernel(string name, string dataType) : name(name), dataType(dataType), buildLog(string()), kernel(0), clCommands(0), clEvent(cl::Event()), timer(NSTimer(name, false, false)) {}
+template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), name(name), dataType(dataType), buildLog(string()), kernel(0), clCommands(0), clEvent(cl::Event()), timer(NSTimer(name, false, false)) {}
 
 
 template< typename T > Kernel< T >::~Kernel() {
