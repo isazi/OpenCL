@@ -13,10 +13,13 @@ LDFLAGS         := -lm -lOpenCL
 CC		:= g++
 LINKER		:= g++
 
-all: clean memset
+all: clean memset vectoradd
 
 memset: clean Memset.cpp
 	$(LINKER) -o ~/bin/Memset $(INCLUDES) $(LIBS) Memset.cpp /home/alessio/src/utils/src/Timer.cpp $(CFLAGS) $(LDFLAGS)
+
+vectoradd: clean VectorAdd.cpp
+	$(LINKER) -o ~/bin/VectorAdd $(INCLUDES) $(LIBS) VectorAdd.cpp /home/alessio/src/utils/src/Timer.cpp $(CFLAGS) $(LDFLAGS)
 
 clean:
 	rm -f ~/bin/Memset
