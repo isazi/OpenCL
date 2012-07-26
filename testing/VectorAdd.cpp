@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
 	GPUData< int > *A = new GPUData< int >("A", true);
 	GPUData< int > *B = new GPUData< int >("B", true);
 	GPUData< int > *C = new GPUData< int >("C", true);
-	Memset< int > *vectorAdd = new VectorAdd< int >("int");
+	VectorAdd< int > *vectorAdd = new VectorAdd< int >("int");
 
 	// Parse command line
 	if ( argc != 7 ) {
