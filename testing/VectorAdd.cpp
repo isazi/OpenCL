@@ -18,39 +18,41 @@
  */
 
 #include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <cmath>
+#include <cstring>
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::fixed;
-#include <iomanip>
 using std::setprecision;
-#include <fstream>
 using std::ofstream;
-#include <cmath>
 using std::ceil;
 using std::pow;
-#include <cstring>
 
 #include <ArgumentList.hpp>
-using isa::utils::ArgumentList;
 #include <InitializeOpenCL.hpp>
-using isa::OpenCL::initializeOpenCL;
 #include <GPUData.hpp>
-using isa::OpenCL::GPUData;
 #include <Exceptions.hpp>
-using isa::Exceptions::OpenCLError;
 #include <kernels/VectorAdd.hpp>
+#include <utils.hpp>
+using isa::utils::ArgumentList;
+using isa::OpenCL::initializeOpenCL;
+using isa::OpenCL::GPUData;
+using isa::Exceptions::OpenCLError;
 using isa::OpenCL::VectorAdd;
+using isa::utils::same;
 
 
 int main(int argc, char *argv[]) {
 	unsigned int oclPlatformID = 0;
 	unsigned int device = 0;
 	unsigned int arrayDim = 0;
-	GPUData< int > *A = new GPUData< int >("A", true);
-	GPUData< int > *B = new GPUData< int >("B", true);
-	GPUData< int > *C = new GPUData< int >("C", true);
-	VectorAdd< int > *vectorAdd = new VectorAdd< int >("int");
+	GPUData< float > *A = new GPUData< float >("A", true);
+	GPUData< float > *B = new GPUData< float >("B", true);
+	GPUData< float > *C = new GPUData< float >("C", true);
+	VectorAdd< float > *vectorAdd = new VectorAdd< float >("int");
 
 	// Parse command line
 	if ( argc != 7 ) {
@@ -115,13 +117,13 @@ int main(int argc, char *argv[]) {
 
 	cout << endl;
 	cout << "GFLOP/s \t" << vectorAdd->getGFLOP() / vectorAdd->getTime() << endl;
-	cout << "GB/s \t" << vectorAdd->getGB() / vectorAdd->getTime() << endl;
+	cout << "GB/s \t\t" << vectorAdd->getGB() / vectorAdd->getTime() << endl;
 	cout << endl;
 
 	for ( unsigned int item = 0; item < arrayDim; item++ ) {
-		int value = (A->getHostData())[item] + (B->getHostData())[item];
+		float value = (A->getHostData())[item] + (B->getHostData())[item];
 
-		if ( value != (C->getHostData())[item] ) {
+		if ( ! same(value, (C->getHostData())[item]) ) {
 			cerr << "Error at item " << item << "." << endl;
 			return 1;
 		}
