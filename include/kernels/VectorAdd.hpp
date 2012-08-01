@@ -83,7 +83,7 @@ template< typename T > VectorAdd< T >::~VectorAdd() {
 
 
 template< typename T > void VectorAdd< T >::compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *clCommands) throw (OpenCLError) {
-	long long unsigned int ops = static_cast< long long unsigned int >(nrRows) * nrThreads;
+	long long unsigned int ops = static_cast< long long unsigned int >(nrThreads);
 	long long unsigned int memOps = ops * 12;
 
 	arInt = ops / static_cast< double >(memOps);
