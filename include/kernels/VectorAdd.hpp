@@ -83,7 +83,7 @@ template< typename T > VectorAdd< T >::~VectorAdd() {
 
 
 template< typename T > void VectorAdd< T >::compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *clCommands) throw (OpenCLError) {
-	long long unsigned int ops = nrRows * nrBlocks * nrThreads;
+	long long unsigned int ops = nrRows * nrThreads * nrThreadsPerBlock;
 	long long unsigned int memOps = ops * 12;
 
 	arInt = ops / static_cast< double >(memOps);
@@ -99,14 +99,14 @@ template< typename T > void VectorAdd< T >::compile(cl::Context &clContext, cl::
 		"C[id] = A[id] + B[id];\n"
 		"}";
 
-	cl::NDRange globalSize(nrThreads / nrRows, nrRows);
-	cl::NDRange localSize(nrThreadsPerBlock, 1);
-
 	Kernel< T >::compile(clContext, clDevice, clCommands, *code);
 }
 
 
 template< typename T > void VectorAdd< T >::run(GPUData< T > *a, GPUData< T > *b, GPUData< T > *c) throw (OpenCLError) {
+	cl::NDRange globalSize(nrThreads / nrRows, nrRows);
+	cl::NDRange localSize(nrThreadsPerBlock, 1);
+
 	Kernel< T >::setArgument(0, *(a->getDeviceData()));
 	Kernel< T >::setArgument(1, *(b->getDeviceData()));
 	Kernel< T >::setArgument(2, *(c->getDeviceData()));

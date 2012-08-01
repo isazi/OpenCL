@@ -104,7 +104,7 @@ template< typename T > inline void Memset< T >::setNrThreadsPerBlock(unsigned in
 }
 
 
-template< typename T > inline void Memset< T >::setNrBlocks(unsigned int threads) {
+template< typename T > inline void Memset< T >::setNrThreads(unsigned int threads) {
 	nrThreads = threads;
 }
 
