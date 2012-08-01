@@ -23,4 +23,5 @@ vectoradd: clean VectorAdd.cpp
 
 clean:
 	rm -f ~/bin/Memset
+	rm -f ~/bin/VectorAdd
 
