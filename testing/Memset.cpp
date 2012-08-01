@@ -48,12 +48,14 @@ int main(int argc, char *argv[]) {
 	unsigned int oclPlatformID = 0;
 	unsigned int device = 0;
 	unsigned int arrayDim = 0;
+	unsigned int nrThreads = 0;
+	unsigned int nrRows = 0;
 	GPUData< int > *data = new GPUData< int >("data", true);
 	Memset< int > *memset = new Memset< int >("int");
 
 	// Parse command line
-	if ( argc != 9 ) {
-		cerr << "Usage: " << argv[0] << " -p <opencl_platform> -d <opencl_device> -v <value> -n <dim>" << endl;
+	if ( argc != 13 ) {
+		cerr << "Usage: " << argv[0] << " -p <opencl_platform> -d <opencl_device> -v <value> -n <dim> -t <threads< -r <rows>" << endl;
 		return 1;
 	}
 
@@ -63,6 +65,8 @@ int main(int argc, char *argv[]) {
 		device = commandLine.getSwitchArgument< unsigned int >("-d");
 		value = commandLine.getSwitchArgument< int >("-v");
 		arrayDim = commandLine.getSwitchArgument< unsigned int >("-n");
+		nrThreads = commandLine.getSwitchArgument< unsigned int >("-t");
+		nrRows = commandLine.getSwitchArgument< unsigned int >("-r");
 	}
 	catch ( exception &err ) {
 		cerr << err.what() << endl;
@@ -95,6 +99,10 @@ int main(int argc, char *argv[]) {
 
 	try {
 		memset->compile(*oclContext, oclDevices->at(device), &(oclQueues->at(device)[0]));
+		memset->setNrThreads(nrThreads);
+		memset->setNrBlocks(dim / nrThreads);
+		memset->setNrRows(nrRows);
+
 		data->copyHostToDevice(true);
 		memset->run(value, data);
 		data->copyDeviceToHost();

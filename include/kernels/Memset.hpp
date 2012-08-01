@@ -48,15 +48,22 @@ public:
 
 	void compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *clCommands) throw (OpenCLError);
 	void run(T value, GPUData< T > *memory) throw (OpenCLError);
+
+	inline void setNrThreads(unsigned int threads);
+	inline void setNrBlocks(unsigned int blocks);
+	inline void setNrRows(unsigned int rows);
 	
 private:
 	string *code;
+	unsigned int nrThreads;
+	unsigned int nrBlocks;
+	unsigned int nrRows;
 };
 
 
 // Implementation
 
-template< typename T > Memset< T >::Memset(string dataType) : Kernel< T >("Memset", dataType), code(0) {}
+template< typename T > Memset< T >::Memset(string dataType) : Kernel< T >("Memset", dataType), code(0), nrThreads(0), nrBlocks(0), nrRows(1) {}
 
 
 template< typename T > Memset< T >::~Memset() {
@@ -71,7 +78,10 @@ template< typename T > void Memset< T >::compile(cl::Context &clContext, cl::Dev
 		delete code;
 	}
 	code = new string();
-	*code = "__kernel void " + Kernel< T >::getName() + "(" + Kernel< T >::getDataType() + " value, __global " + Kernel< T >::getDataType() + " *mem) {\nmem[get_global_id(0)] = value;\n}";
+	*code = "__kernel void " + Kernel< T >::getName() + "(" + Kernel< T >::getDataType() + " value, __global " + Kernel< T >::getDataType() + " *mem) {\n"
+		"unsigned int id = (get_group_id(1) * get_global_size(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
+		"mem[id] = value;\n"
+		"}";
 
 	Kernel< T >::compile(clContext, clDevice, clCommands, *code);
 	Kernel< T >::setAsync(true);
@@ -79,13 +89,28 @@ template< typename T > void Memset< T >::compile(cl::Context &clContext, cl::Dev
 
 
 template< typename T > void Memset< T >::run(T value, GPUData< T > *memory) throw (OpenCLError) {
+	cl::NDRange globalSize(nrBlocks / nrRows, nrRows);
+	cl::NDRange localSize(nrThreads, 1);
 
-	cl::NDRange globalSize(memory->getDeviceDataSize() / sizeof(T));
-	cl::NDRange localSize(cl::NullRange);
 	Kernel< T >::setArgument(0, value);
 	Kernel< T >::setArgument(1, *(memory->getDeviceData()));
 
 	Kernel< T >::run(globalSize, localSize);
+}
+
+
+template< typename T > inline void Memset< T >::setNrThreads(unsigned int threads) {
+	nrThreads = threads;
+}
+
+
+template< typename T > inline void Memset< T >::setNrBlocks(unsigned int blocks) {
+	nrBlocks = blocks;
+}
+
+
+template< typename T > inline void Memset< T >::setNrRows(unsigned int rows) {
+	nrRows = rows;
 }
 
 
