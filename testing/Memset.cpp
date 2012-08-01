@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
 	try {
 		memset->compile(*oclContext, oclDevices->at(device), &(oclQueues->at(device)[0]));
 		memset->setNrThreads(nrThreads);
-		memset->setNrBlocks(dim / nrThreads);
+		memset->setNrBlocks(arrayDim / nrThreads);
 		memset->setNrRows(nrRows);
 
 		data->copyHostToDevice(true);

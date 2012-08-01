@@ -1,6 +1,6 @@
 
-INCLUDES 	+= -I"${OPENCL_INCLUDE}" -I"/home/alessio/src/OpenCL/include" -I"/home/alessio/src/utils/include"
-LIBS		+= -L"${OPENCL_LIB}"
+INCLUDES 	:= -I"${OPENCL_INCLUDE}" -I"/home/alessio/src/OpenCL/include" -I"/home/alessio/src/utils/include"
+LIBS		:= -L"${OPENCL_LIB}"
 
 ifneq ($(debug), 1)
 	CFLAGS		:= -O3 -g0 -w -msse3 -fopenmp
