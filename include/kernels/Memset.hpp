@@ -49,21 +49,21 @@ public:
 	void compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *clCommands) throw (OpenCLError);
 	void run(T value, GPUData< T > *memory) throw (OpenCLError);
 
+	inline void setNrThreadsPerBlock(unsigned int threads);
 	inline void setNrThreads(unsigned int threads);
-	inline void setNrBlocks(unsigned int blocks);
 	inline void setNrRows(unsigned int rows);
 	
 private:
 	string *code;
+	unsigned int nrThreadsPerBlock;
 	unsigned int nrThreads;
-	unsigned int nrBlocks;
 	unsigned int nrRows;
 };
 
 
 // Implementation
 
-template< typename T > Memset< T >::Memset(string dataType) : Kernel< T >("Memset", dataType), code(0), nrThreads(0), nrBlocks(0), nrRows(1) {}
+template< typename T > Memset< T >::Memset(string dataType) : Kernel< T >("Memset", dataType), code(0), nrThreadsPerBlock(0), nrThreads(0), nrRows(0) {}
 
 
 template< typename T > Memset< T >::~Memset() {
@@ -79,7 +79,7 @@ template< typename T > void Memset< T >::compile(cl::Context &clContext, cl::Dev
 	}
 	code = new string();
 	*code = "__kernel void " + Kernel< T >::getName() + "(" + Kernel< T >::getDataType() + " value, __global " + Kernel< T >::getDataType() + " *mem) {\n"
-		"unsigned int id = (get_group_id(1) * get_global_size(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
+		"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
 		"mem[id] = value;\n"
 		"}";
 
@@ -89,8 +89,8 @@ template< typename T > void Memset< T >::compile(cl::Context &clContext, cl::Dev
 
 
 template< typename T > void Memset< T >::run(T value, GPUData< T > *memory) throw (OpenCLError) {
-	cl::NDRange globalSize(nrBlocks / nrRows, nrRows);
-	cl::NDRange localSize(nrThreads, 1);
+	cl::NDRange globalSize(nrThreads / nrRows, nrRows);
+	cl::NDRange localSize(nrThreadsPerBlock, 1);
 
 	Kernel< T >::setArgument(0, value);
 	Kernel< T >::setArgument(1, *(memory->getDeviceData()));
@@ -99,13 +99,13 @@ template< typename T > void Memset< T >::run(T value, GPUData< T > *memory) thro
 }
 
 
-template< typename T > inline void Memset< T >::setNrThreads(unsigned int threads) {
-	nrThreads = threads;
+template< typename T > inline void Memset< T >::setNrThreadsPerBlock(unsigned int threads) {
+	nrThreadsPerBlock = threads;
 }
 
 
-template< typename T > inline void Memset< T >::setNrBlocks(unsigned int blocks) {
-	nrBlocks = blocks;
+template< typename T > inline void Memset< T >::setNrBlocks(unsigned int threads) {
+	nrThreads = threads;
 }
 
 

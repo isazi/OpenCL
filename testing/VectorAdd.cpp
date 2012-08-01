@@ -49,14 +49,16 @@ int main(int argc, char *argv[]) {
 	unsigned int oclPlatformID = 0;
 	unsigned int device = 0;
 	unsigned int arrayDim = 0;
+	unsigned int nrThreads = 0;
+	unsigned int nrRows = 0;
 	GPUData< float > *A = new GPUData< float >("A", true);
 	GPUData< float > *B = new GPUData< float >("B", true);
 	GPUData< float > *C = new GPUData< float >("C", true);
 	VectorAdd< float > *vectorAdd = new VectorAdd< float >("int");
 
 	// Parse command line
-	if ( argc != 7 ) {
-		cerr << "Usage: " << argv[0] << " -p <opencl_platform> -d <opencl_device> -n <dim>" << endl;
+	if ( argc != 11 ) {
+		cerr << "Usage: " << argv[0] << " -p <opencl_platform> -d <opencl_device> -n <dim> -t <threads> -r <rows>" << endl;
 		return 1;
 	}
 
@@ -65,6 +67,8 @@ int main(int argc, char *argv[]) {
 		oclPlatformID = commandLine.getSwitchArgument< unsigned int >("-p");
 		device = commandLine.getSwitchArgument< unsigned int >("-d");
 		arrayDim = commandLine.getSwitchArgument< unsigned int >("-n");
+		nrThreads = commandLine.getSwitchArgument< unsigned int >("-t");
+		nrRows = commandLine.getSwitchArgument< unsigned int >("-r");
 	}
 	catch ( exception &err ) {
 		cerr << err.what() << endl;
@@ -104,7 +108,11 @@ int main(int argc, char *argv[]) {
 	}
 
 	try {
+		vectorAdd->setNrThreadsPerBlock(nrThreads);
+		vectorAdd->setNrThreads(arrayDim);
+		vectorAdd->setNrRows(nrRows);
 		vectorAdd->compile(*oclContext, oclDevices->at(device), &(oclQueues->at(device)[0]));
+
 		A->copyHostToDevice(true);
 		B->copyHostToDevice(true);
 		vectorAdd->run(A, B, C);

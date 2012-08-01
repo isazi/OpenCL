@@ -49,6 +49,10 @@ public:
 	void compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *clCommands) throw (OpenCLError);
 	void run(GPUData< T > *a, GPUData< T > *b, GPUData< T > *c) throw (OpenCLError);
 	
+	inline void setNrThreadsPerBlock(unsigned int threads);
+	inline void setNrThreads(unsigned int threads);
+	inline void setNrRows(unsigned int rows);
+
 	inline string getCode() const;
 	inline double getArithmeticIntensity() const;
 	inline double getGFLOP() const;
@@ -56,6 +60,9 @@ public:
 
 private:
 	string *code;
+	unsigned int nrThreadsPerBlock;
+	unsigned int nrThreads;
+	unsigned int nrRows;
 
 	double arInt;
 	double gflop;
@@ -65,7 +72,7 @@ private:
 
 // Implementation
 
-template< typename T > VectorAdd< T >::VectorAdd(string dataType) : Kernel< T >("VectorAdd", dataType), code(0), arInt(0.0), gflop(0.0), gb(0.0) {}
+template< typename T > VectorAdd< T >::VectorAdd(string dataType) : Kernel< T >("VectorAdd", dataType), code(0), nrThreadsPerBlock(0), nrThreads(0), nrRows(0), arInt(0.0), gflop(0.0), gb(0.0) {}
 
 
 template< typename T > VectorAdd< T >::~VectorAdd() {
@@ -76,33 +83,52 @@ template< typename T > VectorAdd< T >::~VectorAdd() {
 
 
 template< typename T > void VectorAdd< T >::compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *clCommands) throw (OpenCLError) {
+	long long unsigned int ops = nrRows * nrBlocks * nrThreads;
+	long long unsigned int memOps = ops * 12;
+
+	arInt = ops / static_cast< double >(memOps);
+	gflop = giga(ops);
+	gb = giga(memOps);
+	
 	if ( code != 0 ) {
 		delete code;
 	}
 	code = new string();
-	*code = "__kernel void " + Kernel< T >::getName() + "(__global " + Kernel< T >::getDataType() + " *A, __global " + Kernel< T >::getDataType() + " *B, __global " + Kernel< T >::getDataType() + " *C) {\nC[get_global_id(0)] = A[get_global_id(0)] + B[get_global_id(0)];\n}";
+	*code = "__kernel void " + Kernel< T >::getName() + "(__global " + Kernel< T >::getDataType() + " *A, __global " + Kernel< T >::getDataType() + " *B, __global " + Kernel< T >::getDataType() + " *C) {\n"
+		"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
+		"C[id] = A[id] + B[id];\n"
+		"}";
+
+	cl::NDRange globalSize(nrThreads / nrRows, nrRows);
+	cl::NDRange localSize(nrThreadsPerBlock, 1);
 
 	Kernel< T >::compile(clContext, clDevice, clCommands, *code);
 }
 
 
 template< typename T > void VectorAdd< T >::run(GPUData< T > *a, GPUData< T > *b, GPUData< T > *c) throw (OpenCLError) {
-	long long unsigned int ops = a->getDeviceDataSize() / sizeof(T);
-	long long unsigned int memOps = (a->getDeviceDataSize() / sizeof(T)) * 12;
-
-	arInt = ops / static_cast< double >(memOps);
-	gflop = giga(ops);
-	gb = giga(memOps);
-
-
-	cl::NDRange globalSize(ops);
-	cl::NDRange localSize(cl::NullRange);
 	Kernel< T >::setArgument(0, *(a->getDeviceData()));
 	Kernel< T >::setArgument(1, *(b->getDeviceData()));
 	Kernel< T >::setArgument(2, *(c->getDeviceData()));
 
 	Kernel< T >::run(globalSize, localSize);
 }
+
+
+template< typename T > inline void VectorAdd< T >::setNrThreadsPerBlock(unsigned int threads) {
+	nrThreadsPerBlock = threads;
+}
+
+
+template< typename T > inline void VectorAdd< T >::setNrThreads(unsigned int threads) {
+	nrThreads = threads;
+}
+
+
+template< typename T > inline void VectorAdd< T >::setNrRows(unsigned int rows) {
+	nrRows = rows;
+}
+
 
 
 template< typename T > inline string VectorAdd< T >::getCode() const {
