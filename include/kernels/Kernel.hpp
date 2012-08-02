@@ -45,9 +45,8 @@ namespace OpenCL {
 template< typename T > class Kernel {
 public:
 	Kernel(string name, string dataType);
-	virtual ~Kernel();
+	~Kernel();
 
-	virtual void generateCode() = 0;
 	inline void bindOpenCL(cl::Context *context, cl::Device *device, cl::CommandQueue *queue);
 	inline void setAsync(bool asy);
 
@@ -101,13 +100,13 @@ template< typename T > Kernel< T >::~Kernel() {
 template< typename T > void Kernel< T >::compile() throw (OpenCLError) {
 	cl::Program *program;
 	try {
-		cl::Program::Sources sources(1, make_pair(code.c_str(), code.length()));
+		cl::Program::Sources sources(1, make_pair(code->c_str(), code->length()));
 		program = new cl::Program(*clContext, sources, NULL);
 		program->build(vector< cl::Device >(1, *clDevice), "-cl-mad-enable", NULL, NULL);
-		buildLog = program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(clDevice);
+		buildLog = program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(*clDevice);
 	}
 	catch ( cl::Error err ) {	
-		throw OpenCLError("It is not possible to build the " + name + " OpenCL program: " + program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(clDevice) + ".");
+		throw OpenCLError("It is not possible to build the " + name + " OpenCL program: " + program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(*clDevice) + ".");
 	}
 	
 	if ( kernel != 0 ) {

@@ -47,6 +47,7 @@ template < typename T > class VectorAdd : public Kernel< T > {
 public:
 	VectorAdd(string dataType);
 
+	void generateCode() throw (OpenCLError) {
 	void operator()(GPUData< T > *a, GPUData< T > *b, GPUData< T > *c) throw (OpenCLError);
 
 	inline void setNrThreadsPerBlock(unsigned int threads);
@@ -66,7 +67,7 @@ private:
 template< typename T > VectorAdd< T >::VectorAdd(string dataType) : Kernel< T >("VectorAdd", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0) {}
 
 
-template< typename T > virtual void VectorAdd< T >::generateCode() throw (OpenCLError) {
+template< typename T > void VectorAdd< T >::generateCode() throw (OpenCLError) {
 	long long unsigned int ops = static_cast< long long unsigned int >(nrThreads);
 	long long unsigned int memOps = ops * 12;
 
