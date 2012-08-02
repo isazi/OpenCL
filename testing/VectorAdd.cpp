@@ -22,6 +22,7 @@
 #include <fstream>
 #include <cmath>
 #include <cstring>
+
 using std::cout;
 using std::cerr;
 using std::endl;
@@ -37,6 +38,7 @@ using std::pow;
 #include <Exceptions.hpp>
 #include <kernels/VectorAdd.hpp>
 #include <utils.hpp>
+
 using isa::utils::ArgumentList;
 using isa::OpenCL::initializeOpenCL;
 using isa::OpenCL::GPUData;
@@ -51,10 +53,6 @@ int main(int argc, char *argv[]) {
 	unsigned int arrayDim = 0;
 	unsigned int nrThreads = 0;
 	unsigned int nrRows = 0;
-	GPUData< float > *A = new GPUData< float >("A", true);
-	GPUData< float > *B = new GPUData< float >("B", true);
-	GPUData< float > *C = new GPUData< float >("C", true);
-	VectorAdd< float > *vectorAdd = new VectorAdd< float >("int");
 
 	// Parse command line
 	if ( argc != 11 ) {
@@ -88,6 +86,10 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	GPUData< float > *A = new GPUData< float >("A", true);
+	GPUData< float > *B = new GPUData< float >("B", true);
+	GPUData< float > *C = new GPUData< float >("C", true);
+
 	A->setCLContext(oclContext);
 	A->setCLQueue(&(oclQueues->at(device)[0]));
 	A->allocateHostData(arrayDim);
@@ -107,15 +109,17 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	VectorAdd< float > *vectorAdd = new VectorAdd< float >("float");
 	try {
+		vectorAdd->bindOpenCL(oclContext, &(oclDevices->at(device)), &(oclQueues->at(device)[0]));
 		vectorAdd->setNrThreadsPerBlock(nrThreads);
 		vectorAdd->setNrThreads(arrayDim);
 		vectorAdd->setNrRows(nrRows);
-		vectorAdd->compile(*oclContext, oclDevices->at(device), &(oclQueues->at(device)[0]));
+		vectorAdd->generateCode();
 
 		A->copyHostToDevice(true);
 		B->copyHostToDevice(true);
-		vectorAdd->run(A, B, C);
+		vectorAdd(A, B, C);
 		C->copyDeviceToHost();
 	}
 	catch ( OpenCLError err ) {
