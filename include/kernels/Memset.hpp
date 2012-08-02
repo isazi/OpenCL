@@ -55,7 +55,6 @@ public:
 	inline void setNrRows(unsigned int rows);
 	
 private:
-	string *code;
 	unsigned int nrThreadsPerBlock;
 	unsigned int nrThreads;
 	unsigned int nrRows;
@@ -64,7 +63,7 @@ private:
 
 // Implementation
 
-template< typename T > Memset< T >::Memset(string dataType) : Kernel< T >("Memset", dataType), code(0), nrThreadsPerBlock(0), nrThreads(0), nrRows(0) {}
+template< typename T > Memset< T >::Memset(string dataType) : Kernel< T >("Memset", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0) {}
 
 
 template< typename T > void Memset< T >::generateCode() throw (OpenCLError) {
