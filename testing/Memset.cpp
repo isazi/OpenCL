@@ -18,28 +18,30 @@
  */
 
 #include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <cmath>
+#include <cstring>
+
 using std::cout;
 using std::cerr;
 using std::endl;
 using std::fixed;
-#include <iomanip>
 using std::setprecision;
-#include <fstream>
 using std::ofstream;
-#include <cmath>
 using std::ceil;
 using std::pow;
-#include <cstring>
 
 #include <ArgumentList.hpp>
-using isa::utils::ArgumentList;
 #include <InitializeOpenCL.hpp>
-using isa::OpenCL::initializeOpenCL;
 #include <GPUData.hpp>
-using isa::OpenCL::GPUData;
 #include <Exceptions.hpp>
-using isa::Exceptions::OpenCLError;
 #include <kernels/Memset.hpp>
+
+using isa::utils::ArgumentList;
+using isa::OpenCL::initializeOpenCL;
+using isa::OpenCL::GPUData;
+using isa::Exceptions::OpenCLError;
 using isa::OpenCL::Memset;
 
 
@@ -50,8 +52,6 @@ int main(int argc, char *argv[]) {
 	unsigned int arrayDim = 0;
 	unsigned int nrThreads = 0;
 	unsigned int nrRows = 0;
-	GPUData< int > *data = new GPUData< int >("data", true);
-	Memset< int > *memset = new Memset< int >("int");
 
 	// Parse command line
 	if ( argc != 13 ) {
@@ -86,6 +86,8 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	GPUData< int > *data = new GPUData< int >("data", true);
+
 	data->setCLContext(oclContext);
 	data->setCLQueue(&(oclQueues->at(device)[0]));
 	data->allocateHostData(arrayDim);
@@ -97,14 +99,16 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	Memset< int > *memset = new Memset< int >("int");
 	try {
-		memset->compile(*oclContext, oclDevices->at(device), &(oclQueues->at(device)[0]));
+		memset->bindOpenCL(oclContext, &(oclDevices->at(device)), &(oclQueues->at(device)[0]));
+		memset->generateCode();
 		memset->setNrThreadsPerBlock(nrThreads);
 		memset->setNrThreads(arrayDim);
 		memset->setNrRows(nrRows);
 
 		data->copyHostToDevice(true);
-		memset->run(value, data);
+		(*memset)(value, data);
 		data->copyDeviceToHost();
 	}
 	catch ( OpenCLError err ) {

@@ -20,17 +20,19 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #include <string>
-using std::string;
 #include <utility>
+
+using std::string;
 using std::make_pair;
 
 #include <kernels/Kernel.hpp>
-using isa::OpenCL::Kernel;
 #include <GPUData.hpp>
-using isa::OpenCL::GPUData;
 #include <Exceptions.hpp>
-using isa::Exceptions::OpenCLError;
 #include <utils.hpp>
+
+using isa::OpenCL::Kernel;
+using isa::OpenCL::GPUData;
+using isa::Exceptions::OpenCLError;
 using isa::utils::toStringValue;
 
 
@@ -44,10 +46,9 @@ namespace OpenCL {
 template < typename T > class Memset : public Kernel< T > {
 public:
 	Memset(string dataType);
-	~Memset();
 
-	void compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *clCommands) throw (OpenCLError);
-	void run(T value, GPUData< T > *memory) throw (OpenCLError);
+	void generateCode() throw (OpenCLError);
+	void operator()(T value, GPUData< T > *memory) throw (OpenCLError);
 
 	inline void setNrThreadsPerBlock(unsigned int threads);
 	inline void setNrThreads(unsigned int threads);
@@ -66,36 +67,29 @@ private:
 template< typename T > Memset< T >::Memset(string dataType) : Kernel< T >("Memset", dataType), code(0), nrThreadsPerBlock(0), nrThreads(0), nrRows(0) {}
 
 
-template< typename T > Memset< T >::~Memset() {
-	if ( code != 0 ) {
-		delete code;
+template< typename T > void Memset< T >::generateCode() throw (OpenCLError) {
+	if ( this->code != 0 ) {
+		delete this->code;
 	}
-}
-
-
-template< typename T > void Memset< T >::compile(cl::Context &clContext, cl::Device &clDevice, cl::CommandQueue *clCommands) throw (OpenCLError) {
-	if ( code != 0 ) {
-		delete code;
-	}
-	code = new string();
-	*code = "__kernel void " + Kernel< T >::getName() + "(" + Kernel< T >::getDataType() + " value, __global " + Kernel< T >::getDataType() + " *mem) {\n"
+	this->code = new string();
+	*(this->code) = "__kernel void " + this->name + "(" + this->dataType + " value, __global " + this->dataType + " *mem) {\n"
 		"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
 		"mem[id] = value;\n"
 		"}";
 
-	Kernel< T >::compile(clContext, clDevice, clCommands, *code);
-	Kernel< T >::setAsync(true);
+	this->setAsync(true);
+	this->compile();
 }
 
 
-template< typename T > void Memset< T >::run(T value, GPUData< T > *memory) throw (OpenCLError) {
+template< typename T > void Memset< T >::operator()(T value, GPUData< T > *memory) throw (OpenCLError) {
 	cl::NDRange globalSize(nrThreads / nrRows, nrRows);
 	cl::NDRange localSize(nrThreadsPerBlock, 1);
 
-	Kernel< T >::setArgument(0, value);
-	Kernel< T >::setArgument(1, *(memory->getDeviceData()));
+	this->setArgument(0, value);
+	this->setArgument(1, *(memory->getDeviceData()));
 
-	Kernel< T >::run(globalSize, localSize);
+	this->run(globalSize, localSize);
 }
 
 

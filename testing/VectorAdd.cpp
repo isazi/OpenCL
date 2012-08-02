@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
 
 		A->copyHostToDevice(true);
 		B->copyHostToDevice(true);
-		vectorAdd(A, B, C);
+		(*vectorAdd)(A, B, C);
 		C->copyDeviceToHost();
 	}
 	catch ( OpenCLError err ) {

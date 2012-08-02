@@ -47,7 +47,7 @@ template < typename T > class VectorAdd : public Kernel< T > {
 public:
 	VectorAdd(string dataType);
 
-	void generateCode() throw (OpenCLError) {
+	void generateCode() throw (OpenCLError);
 	void operator()(GPUData< T > *a, GPUData< T > *b, GPUData< T > *c) throw (OpenCLError);
 
 	inline void setNrThreadsPerBlock(unsigned int threads);
@@ -58,7 +58,6 @@ private:
 	unsigned int nrThreadsPerBlock;
 	unsigned int nrThreads;
 	unsigned int nrRows;
-
 };
 
 
