@@ -90,7 +90,7 @@ template< typename T > void TimeBinning< T >::generateCode() throw (OpenCLError)
 		"unsigned int idOut = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
 		+ this->dataType + " acc = 0;\n"
 		""
-		"for ( unsigned int sample = 0; sample < " + binFactor_s +  "; sample++ ) {\n"
+		"for ( unsigned int sample = 0; sample < " + *binFactor_s +  "; sample++ ) {\n"
 		"acc += A[idIn + sample];\n"
 		"}\n"
 		"B[idOut] = acc;\n"

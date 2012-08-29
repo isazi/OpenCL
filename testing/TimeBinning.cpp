@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
 	try {
 		timeBinning->bindOpenCL(oclContext, &(oclDevices->at(device)), &(oclQueues->at(device)[0]));
 		timeBinning->setNrThreadsPerBlock(nrThreads);
-		timeBinning->setNrThreads(arrayDim);
+		timeBinning->setNrThreads(arrayDim / binFactor);
 		timeBinning->setNrRows(nrRows);
 		timeBinning->setBinFactor(binFactor);
 		timeBinning->generateCode();
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
 	for ( long long unsigned int item = 0; item < arrayDim; item += binFactor ) {
 		float value = 0.0f;
 
-		for ( unsigned int bin = 0; bin < binFactor; bin++ ) {\
+		for ( unsigned int bin = 0; bin < binFactor; bin++ ) {
 			value = (A->getHostData())[item + bin];
 		}
 
