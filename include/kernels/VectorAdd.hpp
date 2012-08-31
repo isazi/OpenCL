@@ -54,16 +54,20 @@ public:
 	inline void setNrThreads(unsigned int threads);
 	inline void setNrRows(unsigned int rows);
 
+	inline void setVector4(bool vec);
+
 private:
 	unsigned int nrThreadsPerBlock;
 	unsigned int nrThreads;
 	unsigned int nrRows;
+
+	bool vector4;
 };
 
 
 // Implementation
 
-template< typename T > VectorAdd< T >::VectorAdd(string dataType) : Kernel< T >("VectorAdd", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0) {}
+template< typename T > VectorAdd< T >::VectorAdd(string dataType) : Kernel< T >("VectorAdd", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0), vector4(false) {}
 
 
 template< typename T > void VectorAdd< T >::generateCode() throw (OpenCLError) {
@@ -78,10 +82,18 @@ template< typename T > void VectorAdd< T >::generateCode() throw (OpenCLError) {
 		delete this->code;
 	}
 	this->code = new string();
-	*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + " *A, __global " +  this->dataType + " *B, __global " + this->dataType + " *C) {\n"
-		"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
-		"C[id] = A[id] + B[id];\n"
-		"}";
+	if ( vector4 ) {
+		*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + "4 *A, __global " +  this->dataType + "4 *B, __global " + this->dataType + "4 *C) {\n"
+			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
+			"C[id] = A[id] + B[id];\n"
+			"}";
+	}
+	else {
+		*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + " *A, __global " +  this->dataType + " *B, __global " + this->dataType + " *C) {\n"
+			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
+			"C[id] = A[id] + B[id];\n"
+			"}";
+	}
 
 	this->compile();
 }
@@ -111,6 +123,11 @@ template< typename T > inline void VectorAdd< T >::setNrThreads(unsigned int thr
 
 template< typename T > inline void VectorAdd< T >::setNrRows(unsigned int rows) {
 	nrRows = rows;
+}
+
+
+template< typename T > inline void VectorAdd< T >::setVector4(bool vec) {
+	vector4 = vec;
 }
 
 } // OpenCL
