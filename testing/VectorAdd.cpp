@@ -115,7 +115,12 @@ int main(int argc, char *argv[]) {
 	try {
 		vectorAdd->bindOpenCL(oclContext, &(oclDevices->at(device)), &(oclQueues->at(device)[0]));
 		vectorAdd->setNrThreadsPerBlock(nrThreads);
-		vectorAdd->setNrThreads(arrayDim);
+		if ( vector4 ) {
+			vectorAdd->setNrThreads(arrayDim / 4);
+		}
+		else {
+			vectorAdd->setNrThreads(arrayDim);
+		}
 		vectorAdd->setNrRows(nrRows);
 		vectorAdd->setVector4(vector4);
 		vectorAdd->generateCode();
