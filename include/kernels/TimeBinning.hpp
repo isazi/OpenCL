@@ -85,16 +85,32 @@ template< typename T > void TimeBinning< T >::generateCode() throw (OpenCLError)
 		delete this->code;
 	}
 	this->code = new string();
-	*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + " *A, __global " +  this->dataType + " *B) {\n"
-		"unsigned int idIn = (get_group_id(1) * get_num_groups(0) * get_local_size(0) * " + *binFactor_s + ") + (get_group_id(0) * get_local_size(0) * " + *binFactor_s + ") + (get_local_id(0) * " + *binFactor_s + ");\n"
-		"unsigned int idOut = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
-		+ this->dataType + " acc = 0;\n"
-		""
-		"for ( unsigned int sample = 0; sample < " + *binFactor_s +  "; sample++ ) {\n"
-		"acc += A[idIn + sample];\n"
-		"}\n"
-		"B[idOut] = acc;\n"
-		"}";
+	if ( binFactor == 4 ) {
+		*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + "4 *A, __global " +  this->dataType + " *B) {\n"
+			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
+			+ this->dataType + "4 sample = 0;\n"
+			+ this->dataType + " acc = 0;\n"
+			""
+			"sample = A[id];\n"
+			"acc += sample.x;\n"
+			"acc += sample.y;\n"
+			"acc += sample.z;\n"
+			"acc += sample.w;\n"
+			"B[id] = acc;\n"
+			"}";
+	}
+	else {
+		*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + " *A, __global " +  this->dataType + " *B) {\n"
+			"unsigned int idIn = (get_group_id(1) * get_num_groups(0) * get_local_size(0) * " + *binFactor_s + ") + (get_group_id(0) * get_local_size(0) * " + *binFactor_s + ") + (get_local_id(0) * " + *binFactor_s + ");\n"
+			"unsigned int idOut = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
+			+ this->dataType + " acc = 0;\n"
+			""
+			"for ( unsigned int sample = 0; sample < " + *binFactor_s +  "; sample++ ) {\n"
+			"acc += A[idIn + sample];\n"
+			"}\n"
+			"B[idOut] = acc;\n"
+			"}";
+	}
 
 	delete binFactor_s;
 
