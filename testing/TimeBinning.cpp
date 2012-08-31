@@ -125,6 +125,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	cout << endl;
+	cout << "AI \t\t" << timeBinning->getArithmeticIntensity() << endl;
 	cout << "GFLOP/s \t" << timeBinning->getGFLOP() / timeBinning->getTime() << endl;
 	cout << "GB/s \t\t" << timeBinning->getGB() / timeBinning->getTime() << endl;
 	cout << endl;
