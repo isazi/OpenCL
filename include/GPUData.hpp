@@ -249,6 +249,8 @@ template< typename T > void GPUData< T >::copyDeviceToHost(bool async) throw (Op
 template< typename T > void GPUData< T >::dumpDeviceToDisk() throw (OpenCLError) {
 	GPUData< T > temp = GPUData< T >("temp", true);
 
+	temp.setCLContext(clContext);
+	temp.setCLQueue(clQueue);
 	temp.allocateHostData(hostDataSize / sizeof(T));
 	temp.allocateDeviceData(deviceData, deviceDataSize);
 	temp.copyDeviceToHost();
