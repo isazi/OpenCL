@@ -246,7 +246,7 @@ template< typename T > void GPUData< T >::copyDeviceToHost(bool async) throw (Op
 }
 
 
-template< typename T > void GPUDatA< T >::dumpDeviceToDisk() throw (OpenCLError) {
+template< typename T > void GPUData< T >::dumpDeviceToDisk() throw (OpenCLError) {
 	GPUData< T > temp = GPUData< T >("temp", true);
 
 	temp.allocateHostData(hostDataSize / sizeof(T));
