@@ -253,8 +253,8 @@ template< typename T > void GPUData< T >::dumpDeviceToDisk() throw (OpenCLError)
 	temp.allocateDeviceData(deviceData, deviceDataSize);
 	temp.copyDeviceToHost();
 
-	ofstream oFile("./" + name + ".bin", ofstream::binary);
-	oFile.write(temp.getRawHostData(), temp.getHostDataSize());
+	ofstream oFile(("./" + name + ".bin").c_str(), ofstream::binary);
+	oFile.write(reinterpret_cast< char * >(temp.getRawHostData()), temp.getHostDataSize());
 	oFile.close();
 }
 
