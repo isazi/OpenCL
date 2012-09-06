@@ -20,14 +20,18 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #include <string>
-using std::string;
 #include <cstring>
+#include <fstream>
+
+using std::string;
+using std::ofstream;
 
 #include <utils.hpp>
-using isa::utils::toString;
 #include <Exceptions.hpp>
-using isa::Exceptions::OpenCLError;
 #include <Timer.hpp>
+
+using isa::utils::toString;
+using isa::Exceptions::OpenCLError;
 using LOFAR::NSTimer;
 
 
@@ -53,6 +57,7 @@ public:
 
 	void copyHostToDevice(bool async = false) throw (OpenCLError);
 	void copyDeviceToHost(bool async = false) throw (OpenCLError);
+	void dumpDeviceToDisk() throw (OpenCLError);
 
 	inline void setCLContext(cl::Context *context);
 	inline void setCLQueue(cl::CommandQueue *queue);
@@ -240,6 +245,18 @@ template< typename T > void GPUData< T >::copyDeviceToHost(bool async) throw (Op
 
 }
 
+
+template<typename T > void GPUDatA< T ::dumpDeviceToDisk() throw (OpenCLError) {
+	GPUData< T > temp = GPUData< T >("temp", true);
+
+	temp.allocateHostData(hostDataSize / sizeof(T));
+	temp.allocateDeviceData(deviceData, deviceDataSize);
+	temp.copyDeviceToHost();
+
+	ofstream oFile("./" + name + ".bin", ofstream::binary);
+	oFile.write(temp.getRawHostData(), temp.getHostDataSize());
+	oFile.close();
+}
 
 template< typename T > inline void GPUData< T >::setCLContext(cl::Context *context) {
 	clContext = context;
