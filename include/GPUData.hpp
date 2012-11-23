@@ -289,7 +289,7 @@ template< typename T > inline T *GPUData< T >::getHostData() {
 
 
 template< typename T > inline T *GPUData< T >::getHostDataAt(long long unsigned int startingPoint) {
-	return &(hostData[startingPoint])
+	return &(hostData[startingPoint]);
 }
 
 
