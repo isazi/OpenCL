@@ -71,6 +71,7 @@ public:
 	inline T *getHostData();
 	inline T *getHostDataAt(long long unsigned int startintPoint);
 	inline void *getRawHostData();
+	inline void *getRawHostDataAt(long long unsigned int startingPoint);
 	inline size_t getHostDataSize() const;
 	inline T operator[](long long unsigned int item);
 
@@ -294,6 +295,11 @@ template< typename T > inline T *GPUData< T >::getHostDataAt(long long unsigned 
 
 template< typename T > inline void *GPUData< T >::getRawHostData() {
 	return reinterpret_cast< void * >(hostData);
+}
+
+
+template< typename T > inline void *GPUData< T >::getRawHostDataAt(long long unsigned int startingPoint) {
+	return reinterpret_cast< void * >(&(hostData[startingPoint]));
 }
 
 
