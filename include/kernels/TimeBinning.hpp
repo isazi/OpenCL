@@ -96,7 +96,7 @@ template< typename T > void TimeBinning< T >::generateCode() throw (OpenCLError)
 			"acc += sample.y;\n"
 			"acc += sample.z;\n"
 			"acc += sample.w;\n"
-			"B[id] = acc;\n"
+			"B[id] = acc / 4;\n"
 			"}";
 	}
 	else {
@@ -108,7 +108,7 @@ template< typename T > void TimeBinning< T >::generateCode() throw (OpenCLError)
 			"for ( unsigned int sample = 0; sample < " + *binFactor_s +  "; sample++ ) {\n"
 			"acc += A[idIn + sample];\n"
 			"}\n"
-			"B[idOut] = acc;\n"
+			"B[idOut] = acc / " + *binFactor_s + ";\n"
 			"}";
 	}
 

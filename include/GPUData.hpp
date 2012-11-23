@@ -22,15 +22,13 @@
 #include <string>
 #include <cstring>
 #include <fstream>
-
 using std::string;
 using std::ofstream;
 
 #include <utils.hpp>
 #include <Exceptions.hpp>
 #include <Timer.hpp>
-
-using isa::utils::toString;
+using isa::utils::toStringValue;
 using isa::Exceptions::OpenCLError;
 using LOFAR::NSTimer;
 
@@ -46,30 +44,44 @@ template< typename T > class GPUData {
 public:
 	GPUData(string name, bool deletePolicy = false, bool devRO = false);
 	~GPUData();
+	
+	inline string getName() const;
 
+	// Allocation of host data
 	void allocateHostData(T *data, size_t size);
 	void allocateHostData(long long unsigned int nrElements);
 	void deleteHostData();
+	
+	// Allocation of device data
 	void allocateDeviceData(cl::Buffer *data, size_t size);
 	void allocateDeviceData(long long unsigned int nrElements) throw (OpenCLError);
 	void allocateDeviceData() throw (OpenCLError);
 	void deleteDeviceData();
 
+	// Memory transfers
 	void copyHostToDevice(bool async = false) throw (OpenCLError);
 	void copyDeviceToHost(bool async = false) throw (OpenCLError);
 	void dumpDeviceToDisk() throw (OpenCLError);
 
+	// OpenCL
 	inline void setCLContext(cl::Context *context);
 	inline void setCLQueue(cl::CommandQueue *queue);
+	
+	// Access host data
 	inline T *getHostData();
+	inline T *getHostDataAt(long long unsigned int startintPoint);
 	inline void *getRawHostData();
 	inline size_t getHostDataSize() const;
+	inline T operator[](long long unsigned int item);
+
+	// Access device data
 	inline cl::Buffer *getDeviceData();
 	inline size_t getDeviceDataSize() const;
-	inline string getName() const;
+	
+	
+	// Timers
 	inline double getH2DTime() const;
 	inline double getD2HTime() const;
-
 
 private:
 	cl::Context *clContext;
@@ -151,7 +163,7 @@ template< typename T > void GPUData< T >::allocateDeviceData(long long unsigned 
 			}
 		}
 		catch ( cl::Error err ) {
-			throw  OpenCLError("Impossible to allocate " + name + " device memory: " + *(toString< cl_int >(err.err())));
+			throw  OpenCLError("Impossible to allocate " + name + " device memory: " + toStringValue< cl_int >(err.err()));
 		}
 		deviceDataSize = newSize;
 	}
@@ -170,7 +182,7 @@ template< typename T > void GPUData< T >::allocateDeviceData() throw (OpenCLErro
 		}
 	}
 	catch ( cl::Error err ) {
-		throw  OpenCLError("Impossible to allocate " + name + " device memory: " + *(toString< cl_int >(err.err())));
+		throw  OpenCLError("Impossible to allocate " + name + " device memory: " + toStringValue< cl_int >(err.err()));
 	}
 	deviceDataSize = hostDataSize;
 }
@@ -195,7 +207,7 @@ template< typename T > void GPUData< T >::copyHostToDevice(bool async) throw (Op
 			clQueue->enqueueWriteBuffer(*deviceData, CL_FALSE, 0, deviceDataSize, getRawHostData(), NULL, NULL);
 		}
 		catch ( cl::Error err ) {
-			throw OpenCLError("Impossible to copy " + name + " to device: " + *(toString< cl_int >(err.err())));
+			throw OpenCLError("Impossible to copy " + name + " to device: " + toStringValue< cl_int >(err.err()));
 		}
 	}
 	else {
@@ -209,7 +221,7 @@ template< typename T > void GPUData< T >::copyHostToDevice(bool async) throw (Op
 		}
 		catch ( cl::Error err ) {
 			timerH2D.reset();
-			throw OpenCLError("Impossible to copy " + name + " to device: " + *(toString< cl_int >(err.err())));
+			throw OpenCLError("Impossible to copy " + name + " to device: " + toStringValue< cl_int >(err.err()));
 		}
 	}
 }
@@ -225,7 +237,7 @@ template< typename T > void GPUData< T >::copyDeviceToHost(bool async) throw (Op
 			clQueue->enqueueReadBuffer(*deviceData, CL_FALSE, 0, hostDataSize, getRawHostData(), NULL, NULL);
 		}
 		catch ( cl::Error err ) {
-			throw OpenCLError("Impossible to copy " + name + " to host: " + *(toString< cl_int >(err.err())));
+			throw OpenCLError("Impossible to copy " + name + " to host: " + toStringValue< cl_int >(err.err()));
 		}
 	}
 	else {
@@ -239,7 +251,7 @@ template< typename T > void GPUData< T >::copyDeviceToHost(bool async) throw (Op
 		}
 		catch ( cl::Error err ) {
 			timerD2H.reset();
-			throw OpenCLError("Impossible to copy " + name + " to host: " + *(toString< cl_int >(err.err())));
+			throw OpenCLError("Impossible to copy " + name + " to host: " + toStringValue< cl_int >(err.err()));
 		}
 	}
 
@@ -275,6 +287,11 @@ template< typename T > inline T *GPUData< T >::getHostData() {
 }
 
 
+template< typename T > inline T *GPUData< T >::getHostDataAt(long long unsigned int startingPoint) {
+	return &(hostData[startingPoint])
+}
+
+
 template< typename T > inline void *GPUData< T >::getRawHostData() {
 	return reinterpret_cast< void * >(hostData);
 }
@@ -282,6 +299,11 @@ template< typename T > inline void *GPUData< T >::getRawHostData() {
 
 template< typename T > inline size_t GPUData< T >::getHostDataSize() const {
 	return hostDataSize;
+}
+
+
+template< typename T > inline T GPUData< T >::operator[](long long unsigned int item) {
+	return hostData[item];
 }
 
 
