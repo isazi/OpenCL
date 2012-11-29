@@ -201,6 +201,11 @@ template< typename T > inline string Kernel< T >::getBuildLog() const {
 }
 
 
+template< typename T > inline string Kernel< T >::getProgramSource() const {
+	return programSource;
+}
+
+
 template< typename T > inline double Kernel< T >::getTime() const {
 	return timer.getElapsed();
 }
