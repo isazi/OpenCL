@@ -55,6 +55,7 @@ public:
 	inline void setNrRows(unsigned int rows);
 
 	inline void setVector4(bool vec);
+	inline void setNative(bool nat);
 
 private:
 	unsigned int nrThreadsPerBlock;
@@ -62,12 +63,13 @@ private:
 	unsigned int nrRows;
 
 	bool vector4;
+	bool native;
 };
 
 
 // Implementation
 
-template< typename T > VectorCos< T >::VectorCos(string dataType) : Kernel< T >("VectorCos", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0), vector4(false) {}
+template< typename T > VectorCos< T >::VectorCos(string dataType) : Kernel< T >("VectorCos", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0), vector4(false), native(false) {}
 
 
 template< typename T > void VectorCos< T >::generateCode() throw (OpenCLError) {
@@ -86,6 +88,12 @@ template< typename T > void VectorCos< T >::generateCode() throw (OpenCLError) {
 		*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + "4 *A, __global " +  this->dataType + "4 *B, __global " + this->dataType + "4 *C) {\n"
 			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
 			"C[id] = A[id] + cos(B[id]);\n"
+			"}";
+	}
+	else if ( native ) {
+		*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + " *A, __global " +  this->dataType + " *B, __global " + this->dataType + " *C) {\n"
+			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
+			"C[id] = A[id] + native_cos(B[id]);\n"
 			"}";
 	}
 	else {
@@ -128,6 +136,11 @@ template< typename T > inline void VectorCos< T >::setNrRows(unsigned int rows) 
 
 template< typename T > inline void VectorCos< T >::setVector4(bool vec) {
 	vector4 = vec;
+}
+
+
+template< typename T > inline void VectorCos< T >::setNative(bool nat) {
+	native = nat;
 }
 
 } // OpenCL

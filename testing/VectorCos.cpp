@@ -49,6 +49,7 @@ using isa::utils::same;
 
 int main(int argc, char *argv[]) {
 	bool vector4 = false;
+	bool native = false;
 	unsigned int nrIterations = 10;
 	unsigned int oclPlatformID = 0;
 	unsigned int device = 0;
@@ -57,14 +58,15 @@ int main(int argc, char *argv[]) {
 	unsigned int nrRows = 0;
 
 	// Parse command line
-	if ( ! ((argc == 11) || (argc == 12)) ) {
-		cerr << "Usage: " << argv[0] << " [-v4] -p <opencl_platform> -d <opencl_device> -n <dim> -t <threads> -r <rows>" << endl;
+	if ( ! ((argc >= 11) && (argc <= 13)) ) {
+		cerr << "Usage: " << argv[0] << " [-v4] [-na] -p <opencl_platform> -d <opencl_device> -n <dim> -t <threads> -r <rows>" << endl;
 		return 1;
 	}
 
 	ArgumentList commandLine(argc, argv);
 	try {
 		vector4 = commandLine.getSwitch("-v4");
+		native = commandLine.getSwitch("-na");
 		oclPlatformID = commandLine.getSwitchArgument< unsigned int >("-p");
 		device = commandLine.getSwitchArgument< unsigned int >("-d");
 		arrayDim = commandLine.getSwitchArgument< unsigned int >("-n");
@@ -124,6 +126,7 @@ int main(int argc, char *argv[]) {
 		}
 		vectorCos->setNrRows(nrRows);
 		vectorCos->setVector4(vector4);
+		vectorCos->setNative(native);
 		vectorCos->generateCode();
 
 		A->copyHostToDevice(true);
