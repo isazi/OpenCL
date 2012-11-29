@@ -49,6 +49,7 @@ using isa::utils::same;
 
 int main(int argc, char *argv[]) {
 	bool vector4 = false;
+	unsigned int nrIterations = 10;
 	unsigned int oclPlatformID = 0;
 	unsigned int device = 0;
 	unsigned int arrayDim = 0;
@@ -127,7 +128,9 @@ int main(int argc, char *argv[]) {
 
 		A->copyHostToDevice(true);
 		B->copyHostToDevice(true);
-		(*vectorAdd)(A, B, C);
+		for ( unsigned int iter = 0; iter < nrIterations; iter++ ) {
+			(*vectorAdd)(A, B, C);
+		}
 		C->copyDeviceToHost();
 	}
 	catch ( OpenCLError err ) {
@@ -136,8 +139,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	cout << endl;
-	cout << "GFLOP/s \t" << vectorAdd->getGFLOP() / vectorAdd->getTime() << endl;
-	cout << "GB/s \t\t" << vectorAdd->getGB() / vectorAdd->getTime() << endl;
+	cout << "Time \t\t" << (vectorCos->getTime() / nrIterations) << endl;
+	cout << "GFLOP/s \t" << vectorCos->getGFLOP() / (vectorCos->getTime() / nrIterations) << endl;
+	cout << "GB/s \t\t" << vectorCos->getGB() / (vectorCos->getTime() / nrIterations) << endl;
 	cout << endl;
 
 	for ( unsigned int item = 0; item < arrayDim; item++ ) {

@@ -142,9 +142,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	cout << endl;
-	cout << "Time \t\t" << vectorCos->getTime() << endl;
-	cout << "GFLOP/s \t" << vectorCos->getGFLOP() / vectorCos->getTime() << endl;
-	cout << "GB/s \t\t" << vectorCos->getGB() / vectorCos->getTime() << endl;
+	cout << "Time \t\t" << (vectorCos->getTime() / nrIterations) << endl;
+	cout << "GFLOP/s \t" << vectorCos->getGFLOP() / (vectorCos->getTime() / nrIterations) << endl;
+	cout << "GB/s \t\t" << vectorCos->getGB() / (vectorCos->getTime() / nrIterations) << endl;
 	cout << endl;
 
 	return 0;
