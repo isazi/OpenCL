@@ -21,15 +21,15 @@
 #include <CL/cl.hpp>
 #include <string>
 #include <utility>
-
+#include <vector>
 using std::string;
 using std::make_pair;
+using std::vector;
 
 #include <Timer.hpp>
 #include <Exceptions.hpp>
 #include <GPUData.hpp>
 #include <utils.hpp>
-
 using LOFAR::NSTimer;
 using isa::Exceptions::OpenCLError;
 using isa::OpenCL::GPUData;
@@ -55,6 +55,7 @@ public:
 	inline string getCode() const;
 	inline string getDataType() const;
 	inline string getBuildLog() const;
+	char *getBinary(unsigned int binary);
 	inline double getTime() const;
 	inline double getArithmeticIntensity() const;
 	inline double getGFLOP() const;
@@ -77,6 +78,7 @@ protected:
 	cl::CommandQueue *clCommands;
 	cl::Event clEvent;
 	NSTimer timer;
+	vector< char * > binaries;
 	
 	double arInt;
 	double gflop;
@@ -86,12 +88,16 @@ protected:
 
 // Implementation
 
-template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), nvidia(false), name(name), code(0), dataType(dataType), buildLog(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(NSTimer(name, false, false)), arInt(0.0), gflop(0.0), gb(0.0) {}
+template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), nvidia(false), name(name), code(0), dataType(dataType), buildLog(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(NSTimer(name, false, false)), binaries(vector< char * >()), arInt(0.0), gflop(0.0), gb(0.0) {}
 
 
 template< typename T > Kernel< T >::~Kernel() {
 	delete code;
 	delete kernel;
+
+	for ( std::vector< char * >::iterator item = binaries.begin(); item != binaries.end(); item++ ) {
+		delete [] *item;
+	}
 }
 
 
@@ -102,6 +108,7 @@ template< typename T > void Kernel< T >::compile() throw (OpenCLError) {
 		program = new cl::Program(*clContext, sources, NULL);
 		if ( nvidia ) {
 			program->build(vector< cl::Device >(1, *clDevice), "-cl-mad-enable -cl-nv-verbose", NULL, NULL);
+			program->getInfo(CL_PROGRAM_BINARIES, &binaries);
 		}
 		else {
 			program->build(vector< cl::Device >(1, *clDevice), "-cl-mad-enable", NULL, NULL);
@@ -207,6 +214,20 @@ template< typename T > inline string Kernel< T >::getDataType() const {
 
 template< typename T > inline string Kernel< T >::getBuildLog() const {
 	return buildLog;
+}
+
+
+template< typename T > char *Kernel< T >::getBinary(unsigned int binary) {
+	if ( nvidia ) {
+		try {
+			return binaries.at(binary);
+		}
+		catch ( std::out_of_range err ) {
+			return 0;
+		}
+	}
+
+	return 0;
 }
 
 
