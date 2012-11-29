@@ -54,6 +54,7 @@ public:
 	inline string getCode() const;
 	inline string getDataType() const;
 	inline string getBuildLog() const;
+	inline string getProgramSource() const;
 	inline double getTime() const;
 	inline double getArithmeticIntensity() const;
 	inline double getGFLOP() const;
@@ -69,6 +70,7 @@ protected:
 	string *code;
 	string dataType;
 	string buildLog;
+	string programSource;
 	cl::Kernel *kernel;
 	cl::Context *clContext;
 	cl::Device *clDevice;
@@ -84,16 +86,12 @@ protected:
 
 // Implementation
 
-template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), name(name), code(0), dataType(dataType), buildLog(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(NSTimer(name, false, false)), arInt(0.0), gflop(0.0), gb(0.0) {}
+template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), name(name), code(0), dataType(dataType), buildLog(string()), programSource(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(NSTimer(name, false, false)), arInt(0.0), gflop(0.0), gb(0.0) {}
 
 
 template< typename T > Kernel< T >::~Kernel() {
-	if ( code != 0 ) {
-		delete code;
-	}
-	if ( kernel != 0 ) {
-		delete kernel;
-	}
+	delete code;
+	delete kernel;
 }
 
 
@@ -104,6 +102,7 @@ template< typename T > void Kernel< T >::compile() throw (OpenCLError) {
 		program = new cl::Program(*clContext, sources, NULL);
 		program->build(vector< cl::Device >(1, *clDevice), "-cl-mad-enable", NULL, NULL);
 		buildLog = program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(*clDevice);
+		programSource = program->getInfo< CL_PROGRAM_SOURCE >(*clDevice);
 	}
 	catch ( cl::Error err ) {	
 		throw OpenCLError("It is not possible to build the " + name + " OpenCL program: " + program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(*clDevice) + ".");

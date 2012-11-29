@@ -85,10 +85,18 @@ template< typename T > void VectorCos< T >::generateCode() throw (OpenCLError) {
 	}
 	this->code = new string();
 	if ( vector4 ) {
-		*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + "4 *A, __global " +  this->dataType + "4 *B, __global " + this->dataType + "4 *C) {\n"
-			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
-			"C[id] = A[id] + cos(B[id]);\n"
-			"}";
+		if ( native ) {
+			*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + "4 *A, __global " +  this->dataType + "4 *B, __global " + this->dataType + "4 *C) {\n"
+				"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
+				"C[id] = A[id] + native_cos(B[id]);\n"
+				"}";
+		}
+		else {
+			*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + "4 *A, __global " +  this->dataType + "4 *B, __global " + this->dataType + "4 *C) {\n"
+				"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
+				"C[id] = A[id] + cos(B[id]);\n"
+				"}";
+		}
 	}
 	else if ( native ) {
 		*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + " *A, __global " +  this->dataType + " *B, __global " + this->dataType + " *C) {\n"
