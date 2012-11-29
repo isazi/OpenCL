@@ -15,16 +15,16 @@ LINKER		:= g++
 
 all: clean memset vectoradd timebinning vectorcos
 
-memset: clean Memset.cpp
+memset: Memset.cpp
 	$(LINKER) -o ~/bin/Memset $(INCLUDES) $(LIBS) Memset.cpp /home/alessio/src/utils/src/Timer.cpp $(CFLAGS) $(LDFLAGS)
 
-vectoradd: clean VectorAdd.cpp
+vectoradd: VectorAdd.cpp
 	$(LINKER) -o ~/bin/VectorAdd $(INCLUDES) $(LIBS) VectorAdd.cpp /home/alessio/src/utils/src/Timer.cpp $(CFLAGS) $(LDFLAGS)
 
-timebinning: clean TimeBinning.cpp
+timebinning: TimeBinning.cpp
 	$(LINKER) -o ~/bin/TimeBinning $(INCLUDES) $(LIBS) TimeBinning.cpp /home/alessio/src/utils/src/Timer.cpp $(CFLAGS) $(LDFLAGS)
 
-vectorcos: clean VectorCos.cpp
+vectorcos: VectorCos.cpp
 	$(LINKER) -o ~/bin/VectorCos $(INCLUDES) $(LIBS) VectorCos.cpp /home/alessio/src/utils/src/Timer.cpp $(CFLAGS) $(LDFLAGS)
 
 clean:
