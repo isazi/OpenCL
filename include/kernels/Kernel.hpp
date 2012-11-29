@@ -49,12 +49,12 @@ public:
 
 	inline void bindOpenCL(cl::Context *context, cl::Device *device, cl::CommandQueue *queue);
 	inline void setAsync(bool asy);
+	inline void setNvidia(bool nvd);
 
 	inline string getName() const;
 	inline string getCode() const;
 	inline string getDataType() const;
 	inline string getBuildLog() const;
-	inline string getProgramSource() const;
 	inline double getTime() const;
 	inline double getArithmeticIntensity() const;
 	inline double getGFLOP() const;
@@ -66,11 +66,11 @@ protected:
 	void run(cl::NDRange &globalSize, cl::NDRange &localSize) throw (OpenCLError);
 
 	bool async;
+	bool nvidia;
 	string name;
 	string *code;
 	string dataType;
 	string buildLog;
-	string programSource;
 	cl::Kernel *kernel;
 	cl::Context *clContext;
 	cl::Device *clDevice;
@@ -86,7 +86,7 @@ protected:
 
 // Implementation
 
-template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), name(name), code(0), dataType(dataType), buildLog(string()), programSource(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(NSTimer(name, false, false)), arInt(0.0), gflop(0.0), gb(0.0) {}
+template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), nvidia(false), name(name), code(0), dataType(dataType), buildLog(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(NSTimer(name, false, false)), arInt(0.0), gflop(0.0), gb(0.0) {}
 
 
 template< typename T > Kernel< T >::~Kernel() {
@@ -100,9 +100,13 @@ template< typename T > void Kernel< T >::compile() throw (OpenCLError) {
 	try {
 		cl::Program::Sources sources(1, make_pair(code->c_str(), code->length()));
 		program = new cl::Program(*clContext, sources, NULL);
-		program->build(vector< cl::Device >(1, *clDevice), "-cl-mad-enable", NULL, NULL);
+		if ( nvidia ) {
+			program->build(vector< cl::Device >(1, *clDevice), "-cl-mad-enable -cl-nv-verbose", NULL, NULL);
+		}
+		else {
+			program->build(vector< cl::Device >(1, *clDevice), "-cl-mad-enable", NULL, NULL);
+		}
 		buildLog = program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(*clDevice);
-		programSource = program->getInfo< CL_PROGRAM_SOURCE >(*clDevice);
 	}
 	catch ( cl::Error err ) {	
 		throw OpenCLError("It is not possible to build the " + name + " OpenCL program: " + program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(*clDevice) + ".");
@@ -177,6 +181,11 @@ template< typename T > inline void Kernel< T >::setAsync(bool asy) {
 }
 
 
+template< typename T > inline void Kernel< T >::setNvidia(bool nvd) {
+	nvidia = nvd;
+}
+
+
 template< typename T > inline string Kernel< T >::getName() const {
 	return name;
 }
@@ -198,11 +207,6 @@ template< typename T > inline string Kernel< T >::getDataType() const {
 
 template< typename T > inline string Kernel< T >::getBuildLog() const {
 	return buildLog;
-}
-
-
-template< typename T > inline string Kernel< T >::getProgramSource() const {
-	return programSource;
 }
 
 
