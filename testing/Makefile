@@ -13,7 +13,7 @@ LDFLAGS         := -lm -lOpenCL
 CC		:= g++
 LINKER		:= g++
 
-all: clean memset vectoradd timebinning
+all: clean memset vectoradd timebinning vectorcos
 
 memset: clean Memset.cpp
 	$(LINKER) -o ~/bin/Memset $(INCLUDES) $(LIBS) Memset.cpp /home/alessio/src/utils/src/Timer.cpp $(CFLAGS) $(LDFLAGS)
@@ -24,8 +24,12 @@ vectoradd: clean VectorAdd.cpp
 timebinning: clean TimeBinning.cpp
 	$(LINKER) -o ~/bin/TimeBinning $(INCLUDES) $(LIBS) TimeBinning.cpp /home/alessio/src/utils/src/Timer.cpp $(CFLAGS) $(LDFLAGS)
 
+vectorcos: clean VectorCos.cpp
+	$(LINKER) -o ~/bin/VectorCos $(INCLUDES) $(LIBS) VectorCos.cpp /home/alessio/src/utils/src/Timer.cpp $(CFLAGS) $(LDFLAGS)
+
 clean:
 	rm -f ~/bin/Memset
 	rm -f ~/bin/VectorAdd
 	rm -f ~/bin/TimeBinning
+	rm -f ~/bin/VectorCos
 
