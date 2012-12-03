@@ -22,9 +22,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <stdexcept>
 using std::string;
 using std::make_pair;
 using std::vector;
+using std::out_of_range;
 
 #include <Timer.hpp>
 #include <Exceptions.hpp>
@@ -222,7 +224,7 @@ template< typename T > char *Kernel< T >::getBinary(unsigned int binary) {
 		try {
 			return binaries.at(binary);
 		}
-		catch ( std::out_of_range err ) {
+		catch ( out_of_range err ) {
 			return 0;
 		}
 	}
