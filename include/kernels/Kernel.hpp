@@ -104,7 +104,7 @@ template< typename T > Kernel< T >::~Kernel() {
 
 
 template< typename T > void Kernel< T >::compile() throw (OpenCLError) {
-	cl::Program *program;
+	cl::Program *program = 0;
 	try {
 		cl::Program::Sources sources(1, make_pair(code->c_str(), code->length()));
 		program = new cl::Program(*clContext, sources, NULL);

@@ -23,8 +23,8 @@
 using std::vector;
 
 #include <utils.hpp>
-using isa::utils::toStringValue;
 #include <Exceptions.hpp>
+using isa::utils::toStringValue;
 using isa::Exceptions::OpenCLError;
 
 
