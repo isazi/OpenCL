@@ -32,7 +32,7 @@ using std::out_of_range;
 #include <Exceptions.hpp>
 #include <GPUData.hpp>
 #include <utils.hpp>
-using LOFAR::NSTimer;
+using isa::utils::Timer;
 using isa::Exceptions::OpenCLError;
 using isa::OpenCL::GPUData;
 using isa::utils::toStringValue;
@@ -58,7 +58,7 @@ public:
 	inline string getDataType() const;
 	inline string getBuildLog() const;
 	char *getBinary(unsigned int binary);
-	inline double getTime() const;
+	inline Timer& getTimer();
 	inline double getArithmeticIntensity() const;
 	inline double getGFLOP() const;
 	inline double getGB() const;
@@ -79,7 +79,7 @@ protected:
 	cl::Device *clDevice;
 	cl::CommandQueue *clCommands;
 	cl::Event clEvent;
-	NSTimer timer;
+	Timer timer;
 	vector< char * > binaries;
 	
 	double arInt;
@@ -90,7 +90,7 @@ protected:
 
 // Implementation
 
-template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), nvidia(false), name(name), code(0), dataType(dataType), buildLog(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(NSTimer(name, false, false)), binaries(vector< char * >()), arInt(0.0), gflop(0.0), gb(0.0) {}
+template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), nvidia(false), name(name), code(0), dataType(dataType), buildLog(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(Timer()), binaries(vector< char * >()), arInt(0.0), gflop(0.0), gb(0.0) {}
 
 
 template< typename T > Kernel< T >::~Kernel() {
@@ -233,8 +233,8 @@ template< typename T > char *Kernel< T >::getBinary(unsigned int binary) {
 }
 
 
-template< typename T > inline double Kernel< T >::getTime() const {
-	return timer.getElapsed();
+template< typename T > inline Timer& Kernel< T >::getTimer() {
+	return Timer;
 }
 
 
