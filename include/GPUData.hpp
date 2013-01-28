@@ -30,7 +30,7 @@ using std::ofstream;
 #include <Timer.hpp>
 using isa::utils::toStringValue;
 using isa::Exceptions::OpenCLError;
-using LOFAR::NSTimer;
+using isaz::utils:Timer;
 
 
 #ifndef GPU_DATA_HPP
@@ -81,14 +81,14 @@ public:
 	
 	
 	// Timers
-	inline double getH2DTime() const;
-	inline double getD2HTime() const;
+	inline Timer& getH2DTimer();
+	inline Timer& getD2HTimer();
 
 private:
 	cl::Context *clContext;
 	cl::CommandQueue *clQueue;
-	NSTimer timerH2D;
-	NSTimer	timerD2H;
+	Timer timerH2D;
+	Timer timerD2H;
 
 	bool deleteHost;
 	bool deviceReadOnly;
@@ -103,7 +103,7 @@ private:
 
 // Implementations
 
-template< typename T > GPUData< T >::GPUData(string name, bool deletePolicy, bool devRO) : clContext(0), clQueue(0), timerH2D(NSTimer(name + "_H2D", false, false)), timerD2H(NSTimer(name + "_D2H", false, false)), deleteHost(deletePolicy), deviceReadOnly(devRO), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
+template< typename T > GPUData< T >::GPUData(string name, bool deletePolicy, bool devRO) : clContext(0), clQueue(0), timerH2D(Timer()), timerD2H(Timer()), deleteHost(deletePolicy), deviceReadOnly(devRO), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
 
 
 template< typename T > GPUData< T >::~GPUData() {
@@ -328,13 +328,13 @@ template< typename T > inline string GPUData< T >::getName() const {
 }
 
 	
-template< typename T > inline double GPUData< T >::getH2DTime() const {
-	return timerH2D.getElapsed();
+template< typename T > inline Timer& GPUData< T >::getH2DTimer() {
+	return timerH2D;
 }
 
 
-template< typename T > inline double GPUData< T >::getD2HTime() const {
-	return timerD2H.getElapsed();
+template< typename T > inline Timer& GPUData< T >::getD2HTimer() {
+	return timerD2H;
 }
 
 } // OpenCL
