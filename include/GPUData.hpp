@@ -30,7 +30,7 @@ using std::ofstream;
 #include <Timer.hpp>
 using isa::utils::toStringValue;
 using isa::Exceptions::OpenCLError;
-using isa::utils:Timer;
+using isa::utils::Timer;
 
 
 #ifndef GPU_DATA_HPP
