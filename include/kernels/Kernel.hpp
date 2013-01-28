@@ -234,7 +234,7 @@ template< typename T > char *Kernel< T >::getBinary(unsigned int binary) {
 
 
 template< typename T > inline Timer& Kernel< T >::getTimer() {
-	return Timer;
+	return timer;
 }
 
 
