@@ -103,7 +103,7 @@ private:
 
 // Implementations
 
-template< typename T > GPUData< T >::GPUData(string name, bool deletePolicy, bool devRO) : clContext(0), clQueue(0), timerH2D(Timer()), timerD2H(Timer()), deleteHost(deletePolicy), deviceReadOnly(devRO), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
+template< typename T > GPUData< T >::GPUData(string name, bool deletePolicy, bool devRO) : clContext(0), clQueue(0), timerH2D(Timer("H2D")), timerD2H(Timer("D2H")), deleteHost(deletePolicy), deviceReadOnly(devRO), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
 
 
 template< typename T > GPUData< T >::~GPUData() {

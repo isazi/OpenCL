@@ -90,7 +90,7 @@ protected:
 
 // Implementation
 
-template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), nvidia(false), name(name), code(0), dataType(dataType), buildLog(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(Timer()), binaries(vector< char * >()), arInt(0.0), gflop(0.0), gb(0.0) {}
+template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), nvidia(false), name(name), code(0), dataType(dataType), buildLog(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(Timer(name)), binaries(vector< char * >()), arInt(0.0), gflop(0.0), gb(0.0) {}
 
 
 template< typename T > Kernel< T >::~Kernel() {
@@ -170,7 +170,6 @@ template< typename T > void Kernel< T >::run(cl::NDRange &globalSize, cl::NDRang
 			timer.stop();
 		}
 		catch ( cl::Error err ) {
-			timer.stop();
 			timer.reset();
 			throw OpenCLError("Impossible to run " + name + ": " + toStringValue< cl_int >(err.err()) + ".");
 		}
