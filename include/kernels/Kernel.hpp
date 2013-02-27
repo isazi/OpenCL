@@ -71,13 +71,13 @@ protected:
 	bool async;
 	bool nvidia;
 	string name;
-	string *code;
+	string * code;
 	string dataType;
 	string buildLog;
-	cl::Kernel *kernel;
-	cl::Context *clContext;
-	cl::Device *clDevice;
-	cl::CommandQueue *clCommands;
+	cl::Kernel * kernel;
+	cl::Context * clContext;
+	cl::Device * clDevice;
+	cl::CommandQueue * clCommands;
 	cl::Event clEvent;
 	Timer timer;
 	vector< char * > binaries;
