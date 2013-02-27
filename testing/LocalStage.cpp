@@ -102,8 +102,7 @@ int main(int argc, char *argv[]) {
 	try {
 		A->allocateDeviceData();
 		B->allocateDeviceData();
-	}
-	catch ( OpenCLError err ) {
+	} catch ( OpenCLError err ) {
 		cerr << err.what() << endl;
 		return 1;
 	}
@@ -112,7 +111,11 @@ int main(int argc, char *argv[]) {
 	try {
 		localStage->bindOpenCL(oclContext, &(oclDevices->at(device)), &(oclQueues->at(device)[0]));
 		localStage->setNrThreadsPerBlock(nrThreads);
-		localStage->setNrThreads(arrayDim);
+		if ( vector2 ) {
+			localStage->setNrThreads(arrayDim / 2);
+		} else {
+			localStage->setNrThreads(arrayDim);
+		}
 		localStage->setNrRows(nrRows);
 		localStage->setStripe(stripe);
 		localStage->setVector2(vector2);
@@ -123,8 +126,7 @@ int main(int argc, char *argv[]) {
 			(*localStage)(A, B);
 		}
 		B->copyDeviceToHost();
-	}
-	catch ( OpenCLError err ) {
+	} catch ( OpenCLError err ) {
 		cerr << err.what() << endl;
 		return 1;
 	}
