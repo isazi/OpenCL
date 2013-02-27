@@ -54,6 +54,7 @@ public:
 	inline void setNrRows(unsigned int rows);
 
 	inline void setStripe(bool stripe);
+	inline void setVector2(bool vec);
 
 private:
 	unsigned int nrThreadsPerBlock;
@@ -61,12 +62,13 @@ private:
 	unsigned int nrRows;
 
 	bool stripe;
+	bool vector2;
 };
 
 
 // Implementation
 
-template< typename T > LocalStage< T >::LocalStage(string dataType) : Kernel< T >("LocalStage", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0), stripe(false) {}
+template< typename T > LocalStage< T >::LocalStage(string dataType) : Kernel< T >("LocalStage", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0), stripe(false), vector2(false) {}
 
 
 template< typename T > void LocalStage< T >::generateCode() throw (OpenCLError) {
@@ -89,8 +91,15 @@ template< typename T > void LocalStage< T >::generateCode() throw (OpenCLError) 
 			"stage[get_local_id(0) * 2] = input[id];\n"
 			"output[id] = stage[get_local_id(0) * 2] * 2;\n"
 			"}";
-	}
-	else {
+	} else if ( vector2 ) {
+		*(this->code) = "__kernel void " + this->name + "(__global const " + this->dataType + "2 * const restrict input, __global " +  this->dataType + "2 * const restrict output) {\n"
+			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
+			"__local " + this->dataType + "2 stage[" + toStringValue< unsigned int >(nrThreadsPerBlock) + "];\n"
+			"\n"
+			"stage[get_local_id(0) * 1] = input[id];\n"
+			"output[id] = stage[get_local_id(0) * 1] * 2;\n"
+			"}";
+	} else {
 		*(this->code) = "__kernel void " + this->name + "(__global const " + this->dataType + " * const restrict input, __global " +  this->dataType + " * const restrict output) {\n"
 			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
 			"__local " + this->dataType + " stage[" + toStringValue< unsigned int >(nrThreadsPerBlock * 2) + "];\n"
@@ -132,6 +141,10 @@ template< typename T > inline void LocalStage< T >::setNrRows(unsigned int rows)
 
 template< typename T > inline void LocalStage< T >::setStripe(bool stripe) {
 	this->stripe = stripe;
+}
+
+template< typename T > inline void LocalStage< T >::setVector2(bool vec) {
+	vector2 = vec;
 }
 
 } // OpenCL

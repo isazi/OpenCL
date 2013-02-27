@@ -49,6 +49,7 @@ using isa::utils::same;
 
 int main(int argc, char *argv[]) {
 	bool stripe = false;
+	bool vector2 = false;
 	unsigned int nrIterations = 10;
 	unsigned int oclPlatformID = 0;
 	unsigned int device = 0;
@@ -58,20 +59,20 @@ int main(int argc, char *argv[]) {
 
 	// Parse command line
 	if ( ! ((argc == 11) || (argc == 12)) ) {
-		cerr << "Usage: " << argv[0] << " [-st] -p <opencl_platform> -d <opencl_device> -n <dim> -t <threads> -r <rows>" << endl;
+		cerr << "Usage: " << argv[0] << " [-v2] [-st] -p <opencl_platform> -d <opencl_device> -n <dim> -t <threads> -r <rows>" << endl;
 		return 1;
 	}
 
 	ArgumentList commandLine(argc, argv);
 	try {
+		vector2 = commandLine.getSwitch("-v2");
 		stripe = commandLine.getSwitch("-st");
 		oclPlatformID = commandLine.getSwitchArgument< unsigned int >("-p");
 		device = commandLine.getSwitchArgument< unsigned int >("-d");
 		arrayDim = commandLine.getSwitchArgument< unsigned int >("-n");
 		nrThreads = commandLine.getSwitchArgument< unsigned int >("-t");
 		nrRows = commandLine.getSwitchArgument< unsigned int >("-r");
-	}
-	catch ( exception &err ) {
+	} catch ( exception &err ) {
 		cerr << err.what() << endl;
 		return 1;
 	}
@@ -114,6 +115,7 @@ int main(int argc, char *argv[]) {
 		localStage->setNrThreads(arrayDim);
 		localStage->setNrRows(nrRows);
 		localStage->setStripe(stripe);
+		localStage->setVector2(vector2);
 		localStage->generateCode();
 
 		A->copyHostToDevice(true);
