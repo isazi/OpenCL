@@ -3,9 +3,9 @@ INCLUDES 	:= -I"${OPENCL_INCLUDE}" -I"/home/alessio/src/OpenCL/include" -I"/home
 LIBS		:= -L"${OPENCL_LIB}"
 
 ifneq ($(debug), 1)
-	CFLAGS		:= -O3 -g0 -w -msse3 -fopenmp
+	CFLAGS		:= -std=c++0x -O3 -g0 -w -msse3 -fopenmp
 else
-	CFLAGS		:= -O0 -g3 -Wall -msse3 -fopenmp
+	CFLAGS		:= -std=c++0x -O0 -g3 -Wall -msse3 -fopenmp
 endif
 
 LDFLAGS         := -lm -lOpenCL
