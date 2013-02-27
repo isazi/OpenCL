@@ -32,6 +32,7 @@ using isa::OpenCL::Kernel;
 using isa::OpenCL::GPUData;
 using isa::Exceptions::OpenCLError;
 using isa::utils::giga;
+using isa::utils::toStringValue;
 
 
 #ifndef LOCAL_STAGE_HPP
@@ -83,7 +84,7 @@ template< typename T > void LocalStage< T >::generateCode() throw (OpenCLError) 
 	if ( stripe ) {
 		*(this->code) = "__kernel void " + this->name + "(__global const " + this->dataType + " * const restrict input, __global " +  this->dataType + " * const restrict output) {\n"
 			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
-			"__local " + this->dataType + " stage[get_local_size(0) * 2];\n"
+			"__local " + this->dataType + " stage[" + toStringValue< unsigned int >(nrThreadsPerBlock * 2) + "];\n"
 			"\n"
 			"stage[get_local_id(0) * 2] = input[id];\n"
 			"output[id] = stage[get_local_id(0) * 2] * 2;\n"
