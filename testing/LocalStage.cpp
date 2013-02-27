@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 	unsigned int stripe = 0;
 
 	// Parse command line
-	if ( ! ((argc == 11) || (argc == 12)) ) {
+	if ( ! ((argc == 13) || (argc == 14)) ) {
 		cerr << "Usage: " << argv[0] << " [-v2] -p <opencl_platform> -d <opencl_device> -n <dim> -t <threads> -r <rows> -st <stripe>" << endl;
 		return 1;
 	}
