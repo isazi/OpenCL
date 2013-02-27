@@ -36,14 +36,14 @@ using std::pow;
 #include <InitializeOpenCL.hpp>
 #include <GPUData.hpp>
 #include <Exceptions.hpp>
-#include <kernels/localStage.hpp>
+#include <kernels/LocalStage.hpp>
 #include <utils.hpp>
 
 using isa::utils::ArgumentList;
 using isa::OpenCL::initializeOpenCL;
 using isa::OpenCL::GPUData;
 using isa::Exceptions::OpenCLError;
-using isa::OpenCL::localStage;
+using isa::OpenCL::LocalStage;
 using isa::utils::same;
 
 
