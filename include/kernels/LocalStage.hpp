@@ -53,7 +53,7 @@ public:
 	inline void setNrThreads(unsigned int threads);
 	inline void setNrRows(unsigned int rows);
 
-	inline void setStripe(bool stripe);
+	inline void setStripe(unsigned int stripe);
 	inline void setVector2(bool vec);
 
 private:
@@ -61,14 +61,14 @@ private:
 	unsigned int nrThreads;
 	unsigned int nrRows;
 
-	bool stripe;
+	unsigned int stripe;
 	bool vector2;
 };
 
 
 // Implementation
 
-template< typename T > LocalStage< T >::LocalStage(string dataType) : Kernel< T >("LocalStage", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0), stripe(false), vector2(false) {}
+template< typename T > LocalStage< T >::LocalStage(string dataType) : Kernel< T >("LocalStage", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0), stripe(0), vector2(false) {}
 
 
 template< typename T > void LocalStage< T >::generateCode() throw (OpenCLError) {
@@ -83,15 +83,7 @@ template< typename T > void LocalStage< T >::generateCode() throw (OpenCLError) 
 		delete this->code;
 	}
 	this->code = new string();
-	if ( stripe ) {
-		*(this->code) = "__kernel void " + this->name + "(__global const " + this->dataType + " * const restrict input, __global " +  this->dataType + " * const restrict output) {\n"
-			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
-			"__local " + this->dataType + " stage[" + toStringValue< unsigned int >(nrThreadsPerBlock * 2) + "];\n"
-			"\n"
-			"stage[get_local_id(0) * 2] = input[id];\n"
-			"output[id] = stage[get_local_id(0) * 2] * 2;\n"
-			"}";
-	} else if ( vector2 ) {
+	if ( vector2 ) {
 		*(this->code) = "__kernel void " + this->name + "(__global const " + this->dataType + "2 * const restrict input, __global " +  this->dataType + "2 * const restrict output) {\n"
 			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
 			"__local " + this->dataType + "2 stage[" + toStringValue< unsigned int >(nrThreadsPerBlock) + "];\n"
@@ -102,10 +94,10 @@ template< typename T > void LocalStage< T >::generateCode() throw (OpenCLError) 
 	} else {
 		*(this->code) = "__kernel void " + this->name + "(__global const " + this->dataType + " * const restrict input, __global " +  this->dataType + " * const restrict output) {\n"
 			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
-			"__local " + this->dataType + " stage[" + toStringValue< unsigned int >(nrThreadsPerBlock * 2) + "];\n"
+			"__local " + this->dataType + " stage[" + toStringValue< unsigned int >(nrThreadsPerBlock * stripe) + "];\n"
 			"\n"
-			"stage[get_local_id(0) * 1] = input[id];\n"
-			"output[id] = stage[get_local_id(0) * 1] * 2;\n"
+			"stage[get_local_id(0) * " + toStringValue< unsigned int >(stripe) + "] = input[id];\n"
+			"output[id] = stage[get_local_id(0) * " + toStringValue< unsigned int >(stripe) + "] * 2;\n"
 			"}";
 	}
 
@@ -139,7 +131,7 @@ template< typename T > inline void LocalStage< T >::setNrRows(unsigned int rows)
 }
 
 
-template< typename T > inline void LocalStage< T >::setStripe(bool stripe) {
+template< typename T > inline void LocalStage< T >::setStripe(unsigned int stripe) {
 	this->stripe = stripe;
 }
 

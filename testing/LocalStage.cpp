@@ -48,7 +48,6 @@ using isa::utils::same;
 
 
 int main(int argc, char *argv[]) {
-	bool stripe = false;
 	bool vector2 = false;
 	unsigned int nrIterations = 10;
 	unsigned int oclPlatformID = 0;
@@ -56,22 +55,23 @@ int main(int argc, char *argv[]) {
 	unsigned int arrayDim = 0;
 	unsigned int nrThreads = 0;
 	unsigned int nrRows = 0;
+	unsigned int stripe = 0;
 
 	// Parse command line
 	if ( ! ((argc == 11) || (argc == 12)) ) {
-		cerr << "Usage: " << argv[0] << " [-v2] [-st] -p <opencl_platform> -d <opencl_device> -n <dim> -t <threads> -r <rows>" << endl;
+		cerr << "Usage: " << argv[0] << " [-v2] -p <opencl_platform> -d <opencl_device> -n <dim> -t <threads> -r <rows> -st <stripe>" << endl;
 		return 1;
 	}
 
 	ArgumentList commandLine(argc, argv);
 	try {
 		vector2 = commandLine.getSwitch("-v2");
-		stripe = commandLine.getSwitch("-st");
 		oclPlatformID = commandLine.getSwitchArgument< unsigned int >("-p");
 		device = commandLine.getSwitchArgument< unsigned int >("-d");
 		arrayDim = commandLine.getSwitchArgument< unsigned int >("-n");
 		nrThreads = commandLine.getSwitchArgument< unsigned int >("-t");
 		nrRows = commandLine.getSwitchArgument< unsigned int >("-r");
+		stripe = commandLine.getSwitchArgument< unsigned int >("-st");
 	} catch ( exception &err ) {
 		cerr << err.what() << endl;
 		return 1;
