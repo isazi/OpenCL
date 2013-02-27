@@ -36,14 +36,14 @@ using std::pow;
 #include <InitializeOpenCL.hpp>
 #include <GPUData.hpp>
 #include <Exceptions.hpp>
-#include <kernels/VectorAdd.hpp>
+#include <kernels/localStage.hpp>
 #include <utils.hpp>
 
 using isa::utils::ArgumentList;
 using isa::OpenCL::initializeOpenCL;
 using isa::OpenCL::GPUData;
 using isa::Exceptions::OpenCLError;
-using isa::OpenCL::VectorAdd;
+using isa::OpenCL::localStage;
 using isa::utils::same;
 
 
@@ -107,18 +107,18 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	VectorAdd< float > *vectorAdd = new VectorAdd< float >("float");
+	LocalStage< float > *localStage = new LocalStage< float >("float");
 	try {
-		vectorAdd->bindOpenCL(oclContext, &(oclDevices->at(device)), &(oclQueues->at(device)[0]));
-		vectorAdd->setNrThreadsPerBlock(nrThreads);
-		vectorAdd->setNrThreads(arrayDim);
-		vectorAdd->setNrRows(nrRows);
-		vectorAdd->setStripe(stripe);
-		vectorAdd->generateCode();
+		localStage->bindOpenCL(oclContext, &(oclDevices->at(device)), &(oclQueues->at(device)[0]));
+		localStage->setNrThreadsPerBlock(nrThreads);
+		localStage->setNrThreads(arrayDim);
+		localStage->setNrRows(nrRows);
+		localStage->setStripe(stripe);
+		localStage->generateCode();
 
 		A->copyHostToDevice(true);
 		for ( unsigned int iter = 0; iter < nrIterations; iter++ ) {
-			(*vectorAdd)(A, B);
+			(*localStage)(A, B);
 		}
 		B->copyDeviceToHost();
 	}
@@ -128,9 +128,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	cout << endl;
-	cout << "Time \t\t" << (vectorAdd->getTimer()).getAverageTime() << endl;
-	cout << "GFLOP/s \t" << vectorAdd->getGFLOP() / (vectorAdd->getTimer()).getAverageTime() << endl;
-	cout << "GB/s \t\t" << vectorAdd->getGB() / (vectorAdd->getTimer()).getAverageTime() << endl;
+	cout << "Time \t\t" << (localStage->getTimer()).getAverageTime() << endl;
+	cout << "GFLOP/s \t" << localStage->getGFLOP() / (localStage->getTimer()).getAverageTime() << endl;
+	cout << "GB/s \t\t" << localStage->getGB() / (localStage->getTimer()).getAverageTime() << endl;
 	cout << endl;
 
 	for ( unsigned int item = 0; item < arrayDim; item++ ) {
