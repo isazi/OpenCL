@@ -139,9 +139,9 @@ int main(int argc, char *argv[]) {
 	}
 
 	cout << endl;
-	cout << "Time \t\t" << (vectorAdd->getTime() / nrIterations) << endl;
-	cout << "GFLOP/s \t" << vectorAdd->getGFLOP() / (vectorAdd->getTime() / nrIterations) << endl;
-	cout << "GB/s \t\t" << vectorAdd->getGB() / (vectorAdd->getTime() / nrIterations) << endl;
+	cout << "Time \t\t" << (vectorAdd->getTimer()).getAverageTime() << endl;
+	cout << "GFLOP/s \t" << vectorAdd->getGFLOP() / (vectorAdd->getTimer()).getAverageTime() << endl;
+	cout << "GB/s \t\t" << vectorAdd->getGB() / (vectorAdd->getTimer()).getAverageTime() << endl;
 	cout << endl;
 
 	for ( unsigned int item = 0; item < arrayDim; item++ ) {
