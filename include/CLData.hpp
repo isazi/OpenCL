@@ -33,17 +33,17 @@ using isa::Exceptions::OpenCLError;
 using isa::utils::Timer;
 
 
-#ifndef GPU_DATA_HPP
-#define GPU_DATA_HPP
+#ifndef CL_DATA_HPP
+#define CL_DATA_HPP
 
 namespace isa {
 
 namespace OpenCL {
 
-template< typename T > class GPUData {
+template< typename T > class CLData {
 public:
-	GPUData(string name, bool deletePolicy = false, bool devRO = false);
-	~GPUData();
+	CLData(string name, bool deletePolicy = false, bool devRO = false);
+	~CLData();
 	
 	inline string getName() const;
 
@@ -69,7 +69,7 @@ public:
 	
 	// Access host data
 	inline T *getHostData();
-	inline T *getHostDataAt(long long unsigned int startintPoint);
+	inline T *getHostDataAt(long long unsigned int startingPoint);
 	inline void *getRawHostData();
 	inline void *getRawHostDataAt(long long unsigned int startingPoint);
 	inline size_t getHostDataSize() const;
@@ -103,16 +103,16 @@ private:
 
 // Implementations
 
-template< typename T > GPUData< T >::GPUData(string name, bool deletePolicy, bool devRO) : clContext(0), clQueue(0), timerH2D(Timer("H2D")), timerD2H(Timer("D2H")), deleteHost(deletePolicy), deviceReadOnly(devRO), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
+template< typename T > CLData< T >::CLData(string name, bool deletePolicy, bool devRO) : clContext(0), clQueue(0), timerH2D(Timer("H2D")), timerD2H(Timer("D2H")), deleteHost(deletePolicy), deviceReadOnly(devRO), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
 
 
-template< typename T > GPUData< T >::~GPUData() {
+template< typename T > CLData< T >::~CLData() {
 	deleteHostData();
 	deleteDeviceData();
 }
 
 
-template< typename T > void GPUData< T >::allocateHostData(T *data, size_t size) {
+template< typename T > void CLData< T >::allocateHostData(T *data, size_t size) {
 	deleteHostData();
 
 	hostData = data;
@@ -120,7 +120,7 @@ template< typename T > void GPUData< T >::allocateHostData(T *data, size_t size)
 }
 
 
-template< typename T > void GPUData< T >::allocateHostData(long long unsigned int nrElements) {
+template< typename T > void CLData< T >::allocateHostData(long long unsigned int nrElements) {
 	size_t newSize = nrElements * sizeof(T);
 
 	if ( newSize != hostDataSize ) {
@@ -133,7 +133,7 @@ template< typename T > void GPUData< T >::allocateHostData(long long unsigned in
 }
 
 
-template< typename T > void GPUData< T >::deleteHostData() {
+template< typename T > void CLData< T >::deleteHostData() {
 	if ( deleteHost && hostDataSize != 0 ) {
 		delete [] hostData;
 		hostData = 0;
@@ -142,7 +142,7 @@ template< typename T > void GPUData< T >::deleteHostData() {
 }
 
 
-template< typename T > void GPUData< T >::allocateDeviceData(cl::Buffer *data, size_t size) {
+template< typename T > void CLData< T >::allocateDeviceData(cl::Buffer *data, size_t size) {
 	deleteDeviceData();
 
 	deviceData = data;
@@ -150,7 +150,7 @@ template< typename T > void GPUData< T >::allocateDeviceData(cl::Buffer *data, s
 }
 
 
-template< typename T > void GPUData< T >::allocateDeviceData(long long unsigned int nrElements) throw (OpenCLError) {
+template< typename T > void CLData< T >::allocateDeviceData(long long unsigned int nrElements) throw (OpenCLError) {
 	size_t newSize = nrElements * sizeof(T);
 	if ( newSize != deviceDataSize ) {
 		deleteDeviceData();
@@ -171,7 +171,7 @@ template< typename T > void GPUData< T >::allocateDeviceData(long long unsigned 
 }
 
 
-template< typename T > void GPUData< T >::allocateDeviceData() throw (OpenCLError) {
+template< typename T > void CLData< T >::allocateDeviceData() throw (OpenCLError) {
 	deleteDeviceData();
 	
 	try {
@@ -189,7 +189,7 @@ template< typename T > void GPUData< T >::allocateDeviceData() throw (OpenCLErro
 }
 
 
-template< typename T > void GPUData< T >::deleteDeviceData() {
+template< typename T > void CLData< T >::deleteDeviceData() {
 	if ( deviceDataSize != 0 ) {
 		delete deviceData;
 		deviceData = 0;
@@ -198,7 +198,7 @@ template< typename T > void GPUData< T >::deleteDeviceData() {
 }
 
 
-template< typename T > void GPUData< T >::copyHostToDevice(bool async) throw (OpenCLError) {
+template< typename T > void CLData< T >::copyHostToDevice(bool async) throw (OpenCLError) {
 	if ( hostDataSize != deviceDataSize ) {
 		throw OpenCLError("Impossible to copy " + name + ": different memory sizes.");
 	}
@@ -228,7 +228,7 @@ template< typename T > void GPUData< T >::copyHostToDevice(bool async) throw (Op
 }
 
 
-template< typename T > void GPUData< T >::copyDeviceToHost(bool async) throw (OpenCLError) {
+template< typename T > void CLData< T >::copyDeviceToHost(bool async) throw (OpenCLError) {
 	if ( hostDataSize != deviceDataSize ) {
 		throw OpenCLError("Impossible to copy " + name + ": different memory sizes.");
 	}
@@ -259,8 +259,8 @@ template< typename T > void GPUData< T >::copyDeviceToHost(bool async) throw (Op
 }
 
 
-template< typename T > void GPUData< T >::dumpDeviceToDisk() throw (OpenCLError) {
-	GPUData< T > temp = GPUData< T >("temp", true);
+template< typename T > void CLData< T >::dumpDeviceToDisk() throw (OpenCLError) {
+	CLData< T > temp = CLData< T >("temp", true);
 
 	temp.setCLContext(clContext);
 	temp.setCLQueue(clQueue);
@@ -273,72 +273,72 @@ template< typename T > void GPUData< T >::dumpDeviceToDisk() throw (OpenCLError)
 	oFile.close();
 }
 
-template< typename T > inline void GPUData< T >::setCLContext(cl::Context *context) {
+template< typename T > inline void CLData< T >::setCLContext(cl::Context *context) {
 	clContext = context;
 }
 
 	
-template< typename T > inline void GPUData< T >::setCLQueue(cl::CommandQueue *queue) {
+template< typename T > inline void CLData< T >::setCLQueue(cl::CommandQueue *queue) {
 	clQueue = queue;
 }
 
 
-template< typename T > inline T *GPUData< T >::getHostData() {
+template< typename T > inline T *CLData< T >::getHostData() {
 	return hostData;
 }
 
 
-template< typename T > inline T *GPUData< T >::getHostDataAt(long long unsigned int startingPoint) {
+template< typename T > inline T *CLData< T >::getHostDataAt(long long unsigned int startingPoint) {
 	return &(hostData[startingPoint]);
 }
 
 
-template< typename T > inline void *GPUData< T >::getRawHostData() {
+template< typename T > inline void *CLData< T >::getRawHostData() {
 	return reinterpret_cast< void * >(hostData);
 }
 
 
-template< typename T > inline void *GPUData< T >::getRawHostDataAt(long long unsigned int startingPoint) {
+template< typename T > inline void *CLData< T >::getRawHostDataAt(long long unsigned int startingPoint) {
 	return reinterpret_cast< void * >(&(hostData[startingPoint]));
 }
 
 
-template< typename T > inline size_t GPUData< T >::getHostDataSize() const {
+template< typename T > inline size_t CLData< T >::getHostDataSize() const {
 	return hostDataSize;
 }
 
 
-template< typename T > inline T GPUData< T >::operator[](long long unsigned int item) {
+template< typename T > inline T CLData< T >::operator[](long long unsigned int item) {
 	return hostData[item];
 }
 
 
-template< typename T > inline cl::Buffer *GPUData< T >::getDeviceData() {
+template< typename T > inline cl::Buffer *CLData< T >::getDeviceData() {
 	return deviceData;
 }
 
 
-template< typename T > inline size_t GPUData< T >::getDeviceDataSize() const {
+template< typename T > inline size_t CLData< T >::getDeviceDataSize() const {
 	return deviceDataSize;
 }
 
 
-template< typename T > inline string GPUData< T >::getName() const {
+template< typename T > inline string CLData< T >::getName() const {
 	return name;
 }
 
 	
-template< typename T > inline Timer& GPUData< T >::getH2DTimer() {
+template< typename T > inline Timer& CLData< T >::getH2DTimer() {
 	return timerH2D;
 }
 
 
-template< typename T > inline Timer& GPUData< T >::getD2HTimer() {
+template< typename T > inline Timer& CLData< T >::getD2HTimer() {
 	return timerD2H;
 }
 
 } // OpenCL
 } // isa
 
-#endif // GPU_DATA_HPP
+#endif // CL_DATA_HPP
 
