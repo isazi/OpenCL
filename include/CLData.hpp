@@ -42,7 +42,7 @@ namespace OpenCL {
 
 template< typename T > class CLData {
 public:
-	CLData(string name, bool deletePolicy = false, bool devRO = false);
+	CLData(string name, bool deletePolicy = false);
 	~CLData();
 	
 	inline string getName() const;
@@ -57,6 +57,8 @@ public:
 	void allocateDeviceData(long long unsigned int nrElements) throw (OpenCLError);
 	void allocateDeviceData() throw (OpenCLError);
 	void deleteDeviceData();
+	inline void setDeviceReadOnly();
+	inline void setDeviceWriteOnly();
 
 	// Memory transfers
 	void copyHostToDevice(bool async = false) throw (OpenCLError);
@@ -92,6 +94,7 @@ private:
 
 	bool deleteHost;
 	bool deviceReadOnly;
+	bool deviceWriteOnly;
 	T *hostData;
 	size_t hostDataSize;
 	cl::Buffer *deviceData;
@@ -103,7 +106,7 @@ private:
 
 // Implementations
 
-template< typename T > CLData< T >::CLData(string name, bool deletePolicy, bool devRO) : clContext(0), clQueue(0), timerH2D(Timer("H2D")), timerD2H(Timer("D2H")), deleteHost(deletePolicy), deviceReadOnly(devRO), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
+template< typename T > CLData< T >::CLData(string name, bool deletePolicy, bool devRO) : clContext(0), clQueue(0), timerH2D(Timer("H2D")), timerD2H(Timer("D2H")), deleteHost(deletePolicy), deviceReadOnly(false), deviceWriteOnly(false), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
 
 
 template< typename T > CLData< T >::~CLData() {
@@ -158,12 +161,13 @@ template< typename T > void CLData< T >::allocateDeviceData(long long unsigned i
 		try {
 			if ( deviceReadOnly ) {
 				deviceData = new cl::Buffer(*clContext, CL_MEM_READ_ONLY, newSize, NULL, NULL);
-			}
-			else {
+			} else if ( deviceWriteOnly ) {
+				deviceData = new cl::Buffer(*clContext, CL_MEM_WRITE_ONLY, newSize, NULL, NULL);
+
+			} else {
 				deviceData = new cl::Buffer(*clContext, CL_MEM_READ_WRITE, newSize, NULL, NULL);
 			}
-		}
-		catch ( cl::Error err ) {
+		} catch ( cl::Error err ) {
 			throw  OpenCLError("Impossible to allocate " + name + " device memory: " + toStringValue< cl_int >(err.err()));
 		}
 		deviceDataSize = newSize;
@@ -177,12 +181,12 @@ template< typename T > void CLData< T >::allocateDeviceData() throw (OpenCLError
 	try {
 		if ( deviceReadOnly ) {
 			deviceData = new cl::Buffer(*clContext, CL_MEM_READ_ONLY, hostDataSize, NULL, NULL);
-		}
-		else {
+		} else if ( deviceWriteOnly ) {
+			deviceData = new cl::Buffer(*clContext, CL_MEM_WRITE_ONLY, hostDataSize, NULL, NULL);
+		} else {
 			deviceData = new cl::Buffer(*clContext, CL_MEM_READ_WRITE, hostDataSize, NULL, NULL);
 		}
-	}
-	catch ( cl::Error err ) {
+	} catch ( cl::Error err ) {
 		throw  OpenCLError("Impossible to allocate " + name + " device memory: " + toStringValue< cl_int >(err.err()));
 	}
 	deviceDataSize = hostDataSize;
@@ -195,6 +199,18 @@ template< typename T > void CLData< T >::deleteDeviceData() {
 		deviceData = 0;
 		deviceDataSize = 0;
 	}
+}
+
+
+template< typename T > inline void CLData< T >::setDeviceReadOnly() {
+	deviceReadOnly = true;
+	deviceWriteOnly = false;
+}
+
+
+template< typename T > inline void CLData< T >::setDeviceWriteOnly() {
+	deviceWriteOnly = true;
+	deviceReadOnly = false;
 }
 
 
