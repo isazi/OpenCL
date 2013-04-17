@@ -56,6 +56,7 @@ public:
 	void allocateDeviceData(cl::Buffer * data, size_t size);
 	void allocateDeviceData(long long unsigned int nrElements) throw (OpenCLError);
 	void allocateDeviceData() throw (OpenCLError);
+	void allocateSharedeDeviceData() throw (OpenCLError);
 	void deleteDeviceData();
 	inline void setDeviceReadOnly();
 	inline void setDeviceWriteOnly();
@@ -106,7 +107,7 @@ private:
 
 // Implementations
 
-template< typename T > CLData< T >::CLData(string name, bool deletePolicy, bool devRO) : clContext(0), clQueue(0), timerH2D(Timer("H2D")), timerD2H(Timer("D2H")), deleteHost(deletePolicy), deviceReadOnly(false), deviceWriteOnly(false), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
+template< typename T > CLData< T >::CLData(string name, bool deletePolicy) : clContext(0), clQueue(0), timerH2D(Timer("H2D")), timerD2H(Timer("D2H")), deleteHost(deletePolicy), deviceReadOnly(false), deviceWriteOnly(false), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
 
 
 template< typename T > CLData< T >::~CLData() {
@@ -185,6 +186,25 @@ template< typename T > void CLData< T >::allocateDeviceData() throw (OpenCLError
 			deviceData = new cl::Buffer(*clContext, CL_MEM_WRITE_ONLY, hostDataSize, NULL, NULL);
 		} else {
 			deviceData = new cl::Buffer(*clContext, CL_MEM_READ_WRITE, hostDataSize, NULL, NULL);
+		}
+	} catch ( cl::Error err ) {
+		deviceDataSize = 0;
+		throw  OpenCLError("Impossible to allocate " + name + " device memory: " + toStringValue< cl_int >(err.err()));
+	}
+	deviceDataSize = hostDataSize;
+}
+
+
+template< typename T > void CLData< T >::allocateSharedDeviceData() throw (OpenCLError) {
+	deleteDeviceData();
+	
+	try {
+		if ( deviceReadOnly ) {
+			deviceData = new cl::Buffer(*clContext, CL_MEM_USE_HOST_PTR | CL_MEM_READ_ONLY, hostDataSize, getRawHostData(), NULL);
+		} else if ( deviceWriteOnly ) {
+			deviceData = new cl::Buffer(*clContext, CL_MEM_USE_HOST_PTR | CL_MEM_WRITE_ONLY, hostDataSize, getRawHostData(), NULL);
+		} else {
+			deviceData = new cl::Buffer(*clContext, CL_MEM_USE_HOST_PTR | CL_MEM_READ_WRITE, hostDataSize, getRawHostData(), NULL);
 		}
 	} catch ( cl::Error err ) {
 		deviceDataSize = 0;
