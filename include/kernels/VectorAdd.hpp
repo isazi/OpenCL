@@ -26,12 +26,12 @@ using std::string;
 using std::make_pair;
 
 #include <kernels/Kernel.hpp>
-#include <GPUData.hpp>
+#include <CLData.hpp>
 #include <Exceptions.hpp>
 #include <utils.hpp>
 
 using isa::OpenCL::Kernel;
-using isa::OpenCL::GPUData;
+using isa::OpenCL::CLData;
 using isa::Exceptions::OpenCLError;
 using isa::utils::giga;
 
@@ -48,58 +48,45 @@ public:
 	VectorAdd(string dataType);
 
 	void generateCode() throw (OpenCLError);
-	void operator()(GPUData< T > *a, GPUData< T > *b, GPUData< T > *c) throw (OpenCLError);
+	void operator()(CLData< T > * a, CLData< T > * b, CLData< T > * c) throw (OpenCLError);
 
 	inline void setNrThreadsPerBlock(unsigned int threads);
 	inline void setNrThreads(unsigned int threads);
 	inline void setNrRows(unsigned int rows);
 
-	inline void setVector4(bool vec);
-
 private:
 	unsigned int nrThreadsPerBlock;
 	unsigned int nrThreads;
 	unsigned int nrRows;
-
-	bool vector4;
 };
 
 
 // Implementation
 
-template< typename T > VectorAdd< T >::VectorAdd(string dataType) : Kernel< T >("VectorAdd", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0), vector4(false) {}
+template< typename T > VectorAdd< T >::VectorAdd(string dataType) : Kernel< T >("VectorAdd", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0) {}
 
 
 template< typename T > void VectorAdd< T >::generateCode() throw (OpenCLError) {
 	long long unsigned int ops = static_cast< long long unsigned int >(nrThreads);
-	long long unsigned int memOps = ops * 12;
+	long long unsigned int memOps = ops * 3 * sizeof(T);
 
 	this->arInt = ops / static_cast< double >(memOps);
 	this->gflop = giga(ops);
 	this->gb = giga(memOps);
 	
-	if ( this->code != 0 ) {
-		delete this->code;
-	}
+	delete this->code;
 	this->code = new string();
-	if ( vector4 ) {
-		*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + "4 *A, __global " +  this->dataType + "4 *B, __global " + this->dataType + "4 *C) {\n"
-			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
-			"C[id] = A[id] + B[id];\n"
-			"}";
-	}
-	else {
-		*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + " *A, __global " +  this->dataType + " *B, __global " + this->dataType + " *C) {\n"
-			"unsigned int id = (get_group_id(1) * get_num_groups(0) * get_local_size(0)) + (get_group_id(0) * get_local_size(0)) + get_local_id(0);\n"
-			"C[id] = A[id] + B[id];\n"
-			"}";
-	}
+	*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + " * const restrict A, __global " +  this->dataType + " * constr restrict B, __global const " + this->dataType + " * constr restrict C) {\n"
+		"const unsigned int id = ( get_global_id(1) * get_global_size(0) ) + get_global_id(0);\n"
+		+ this->dataType + " value = A[id] + B[id];\n"
+		"C[id] = value;\n"
+		"}";
 
 	this->compile();
 }
 
 
-template< typename T > void VectorAdd< T >::operator()(GPUData< T > *a, GPUData< T > *b, GPUData< T > *c) throw (OpenCLError) {
+template< typename T > void VectorAdd< T >::operator()(CLData< T > * a, CLData< T > * b, CLData< T > * c) throw (OpenCLError) {
 	cl::NDRange globalSize(nrThreads / nrRows, nrRows);
 	cl::NDRange localSize(nrThreadsPerBlock, 1);
 
@@ -125,13 +112,7 @@ template< typename T > inline void VectorAdd< T >::setNrRows(unsigned int rows) 
 	nrRows = rows;
 }
 
-
-template< typename T > inline void VectorAdd< T >::setVector4(bool vec) {
-	vector4 = vec;
-}
-
 } // OpenCL
 } // isa
 
 #endif // VECTOR_ADD_HPP
-

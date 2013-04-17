@@ -34,45 +34,43 @@ using std::pow;
 
 #include <ArgumentList.hpp>
 #include <InitializeOpenCL.hpp>
-#include <GPUData.hpp>
+#include <CLData.hpp>
 #include <Exceptions.hpp>
-#include <kernels/LocalStage.hpp>
+#include <kernels/VectorAdd.hpp>
 #include <utils.hpp>
 
 using isa::utils::ArgumentList;
 using isa::OpenCL::initializeOpenCL;
-using isa::OpenCL::GPUData;
+using isa::OpenCL::CLData;
 using isa::Exceptions::OpenCLError;
-using isa::OpenCL::LocalStage;
+using isa::OpenCL::VectorAdd;
 using isa::utils::same;
 
 
 int main(int argc, char *argv[]) {
-	bool vector2 = false;
+	bool vector4 = false;
 	unsigned int nrIterations = 10;
 	unsigned int oclPlatformID = 0;
 	unsigned int device = 0;
 	unsigned int arrayDim = 0;
 	unsigned int nrThreads = 0;
 	unsigned int nrRows = 0;
-	unsigned int stripe = 0;
 
 	// Parse command line
-	if ( ! ((argc == 13) || (argc == 14)) ) {
-		cerr << "Usage: " << argv[0] << " [-v2] -p <opencl_platform> -d <opencl_device> -n <dim> -t <threads> -r <rows> -st <stripe>" << endl;
+	if ( argc != 11 ) {
+		cerr << "Usage: " << argv[0] << " -p <opencl_platform> -d <opencl_device> -n <dim> -t <threads> -r <rows>" << endl;
 		return 1;
 	}
 
 	ArgumentList commandLine(argc, argv);
 	try {
-		vector2 = commandLine.getSwitch("-v2");
 		oclPlatformID = commandLine.getSwitchArgument< unsigned int >("-p");
 		device = commandLine.getSwitchArgument< unsigned int >("-d");
 		arrayDim = commandLine.getSwitchArgument< unsigned int >("-n");
 		nrThreads = commandLine.getSwitchArgument< unsigned int >("-t");
 		nrRows = commandLine.getSwitchArgument< unsigned int >("-r");
-		stripe = commandLine.getSwitchArgument< unsigned int >("-st");
-	} catch ( exception &err ) {
+	}
+	catch ( exception &err ) {
 		cerr << err.what() << endl;
 		return 1;
 	}
@@ -90,8 +88,9 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	GPUData< float > *A = new GPUData< float >("A", true);
-	GPUData< float > *B = new GPUData< float >("B", true);
+	CLData< float > *A = new CLData< float >("A", true);
+	CLData< float > *B = new CLData< float >("B", true);
+	CLData< float > *C = new CLData< float >("C", true);
 
 	A->setCLContext(oclContext);
 	A->setCLQueue(&(oclQueues->at(device)[0]));
@@ -99,48 +98,50 @@ int main(int argc, char *argv[]) {
 	B->setCLContext(oclContext);
 	B->setCLQueue(&(oclQueues->at(device)[0]));
 	B->allocateHostData(arrayDim);
+	C->setCLContext(oclContext);
+	C->setCLQueue(&(oclQueues->at(device)[0]));
+	C->allocateHostData(arrayDim);
 	try {
+		A->setDeviceWriteOnly();
 		A->allocateDeviceData();
+		B->setDeviceWriteOnly();
 		B->allocateDeviceData();
+		C->setDeviceReadOnly();
+		C->allocateDeviceData();
 	} catch ( OpenCLError err ) {
 		cerr << err.what() << endl;
 		return 1;
 	}
 
-	LocalStage< float > *localStage = new LocalStage< float >("float");
+	VectorAdd< float > *vectorAdd = new VectorAdd< float >("float");
 	try {
-		localStage->bindOpenCL(oclContext, &(oclDevices->at(device)), &(oclQueues->at(device)[0]));
-		localStage->setNrThreadsPerBlock(nrThreads);
-		if ( vector2 ) {
-			localStage->setNrThreads(arrayDim / 2);
-		} else {
-			localStage->setNrThreads(arrayDim);
-		}
-		localStage->setNrRows(nrRows);
-		localStage->setStripe(stripe);
-		localStage->setVector2(vector2);
-		localStage->generateCode();
+		vectorAdd->bindOpenCL(oclContext, &(oclDevices->at(device)), &(oclQueues->at(device)[0]));
+		vectorAdd->setNrThreadsPerBlock(nrThreads);
+		vectorAdd->setNrThreads(arrayDim);
+		vectorAdd->setNrRows(nrRows);
+		vectorAdd->generateCode();
 
 		A->copyHostToDevice(true);
+		B->copyHostToDevice(true);
 		for ( unsigned int iter = 0; iter < nrIterations; iter++ ) {
-			(*localStage)(A, B);
+			(*vectorAdd)(A, B, C);
 		}
-		B->copyDeviceToHost();
+		C->copyDeviceToHost();
 	} catch ( OpenCLError err ) {
 		cerr << err.what() << endl;
 		return 1;
 	}
 
 	cout << endl;
-	cout << "Time \t\t" << (localStage->getTimer()).getAverageTime() << endl;
-	cout << "GFLOP/s \t" << localStage->getGFLOP() / (localStage->getTimer()).getAverageTime() << endl;
-	cout << "GB/s \t\t" << localStage->getGB() / (localStage->getTimer()).getAverageTime() << endl;
+	cout << "Time \t\t" << (vectorAdd->getTimer()).getAverageTime() << endl;
+	cout << "GFLOP/s \t" << vectorAdd->getGFLOP() / (vectorAdd->getTimer()).getAverageTime() << endl;
+	cout << "GB/s \t\t" << vectorAdd->getGB() / (vectorAdd->getTimer()).getAverageTime() << endl;
 	cout << endl;
 
 	for ( unsigned int item = 0; item < arrayDim; item++ ) {
-		float value = (A->getHostData())[item] * 2;
+		float value = (A->getHostData())[item] + (B->getHostData())[item];
 
-		if ( ! same(value, (B->getHostData())[item]) ) {
+		if ( ! same(value, (C->getHostData())[item]) ) {
 			cerr << "Error at item " << item << "." << endl;
 			return 1;
 		}
