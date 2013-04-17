@@ -48,12 +48,12 @@ public:
 	inline string getName() const;
 
 	// Allocation of host data
-	void allocateHostData(T *data, size_t size);
+	void allocateHostData(T * data, size_t size);
 	void allocateHostData(long long unsigned int nrElements);
 	void deleteHostData();
 	
 	// Allocation of device data
-	void allocateDeviceData(cl::Buffer *data, size_t size);
+	void allocateDeviceData(cl::Buffer * data, size_t size);
 	void allocateDeviceData(long long unsigned int nrElements) throw (OpenCLError);
 	void allocateDeviceData() throw (OpenCLError);
 	void deleteDeviceData();
@@ -66,38 +66,38 @@ public:
 	void dumpDeviceToDisk() throw (OpenCLError);
 
 	// OpenCL
-	inline void setCLContext(cl::Context *context);
-	inline void setCLQueue(cl::CommandQueue *queue);
+	inline void setCLContext(cl::Context * context);
+	inline void setCLQueue(cl::CommandQueue * queue);
 	
 	// Access host data
-	inline T *getHostData();
-	inline T *getHostDataAt(long long unsigned int startingPoint);
-	inline void *getRawHostData();
-	inline void *getRawHostDataAt(long long unsigned int startingPoint);
+	inline T * getHostData();
+	inline T * getHostDataAt(long long unsigned int startingPoint);
+	inline void * getRawHostData();
+	inline void * getRawHostDataAt(long long unsigned int startingPoint);
 	inline size_t getHostDataSize() const;
 	inline T operator[](long long unsigned int item);
 
 	// Access device data
-	inline cl::Buffer *getDeviceData();
+	inline cl::Buffer * getDeviceData();
 	inline size_t getDeviceDataSize() const;
 	
 	
 	// Timers
-	inline Timer& getH2DTimer();
-	inline Timer& getD2HTimer();
+	inline Timer & getH2DTimer();
+	inline Timer & getD2HTimer();
 
 private:
-	cl::Context *clContext;
-	cl::CommandQueue *clQueue;
+	cl::Context * clContext;
+	cl::CommandQueue * clQueue;
 	Timer timerH2D;
 	Timer timerD2H;
 
 	bool deleteHost;
 	bool deviceReadOnly;
 	bool deviceWriteOnly;
-	T *hostData;
+	T * hostData;
 	size_t hostDataSize;
-	cl::Buffer *deviceData;
+	cl::Buffer * deviceData;
 	size_t deviceDataSize;
 
 	string name;
@@ -115,7 +115,7 @@ template< typename T > CLData< T >::~CLData() {
 }
 
 
-template< typename T > void CLData< T >::allocateHostData(T *data, size_t size) {
+template< typename T > void CLData< T >::allocateHostData(T * data, size_t size) {
 	deleteHostData();
 
 	hostData = data;
@@ -145,7 +145,7 @@ template< typename T > void CLData< T >::deleteHostData() {
 }
 
 
-template< typename T > void CLData< T >::allocateDeviceData(cl::Buffer *data, size_t size) {
+template< typename T > void CLData< T >::allocateDeviceData(cl::Buffer * data, size_t size) {
 	deleteDeviceData();
 
 	deviceData = data;
@@ -163,11 +163,11 @@ template< typename T > void CLData< T >::allocateDeviceData(long long unsigned i
 				deviceData = new cl::Buffer(*clContext, CL_MEM_READ_ONLY, newSize, NULL, NULL);
 			} else if ( deviceWriteOnly ) {
 				deviceData = new cl::Buffer(*clContext, CL_MEM_WRITE_ONLY, newSize, NULL, NULL);
-
 			} else {
 				deviceData = new cl::Buffer(*clContext, CL_MEM_READ_WRITE, newSize, NULL, NULL);
 			}
 		} catch ( cl::Error err ) {
+			deviceDataSize = 0;
 			throw  OpenCLError("Impossible to allocate " + name + " device memory: " + toStringValue< cl_int >(err.err()));
 		}
 		deviceDataSize = newSize;
@@ -187,6 +187,7 @@ template< typename T > void CLData< T >::allocateDeviceData() throw (OpenCLError
 			deviceData = new cl::Buffer(*clContext, CL_MEM_READ_WRITE, hostDataSize, NULL, NULL);
 		}
 	} catch ( cl::Error err ) {
+		deviceDataSize = 0;
 		throw  OpenCLError("Impossible to allocate " + name + " device memory: " + toStringValue< cl_int >(err.err()));
 	}
 	deviceDataSize = hostDataSize;
@@ -222,8 +223,7 @@ template< typename T > void CLData< T >::copyHostToDevice(bool async) throw (Ope
 	if ( async ) {
 		try {
 			clQueue->enqueueWriteBuffer(*deviceData, CL_FALSE, 0, deviceDataSize, getRawHostData(), NULL, NULL);
-		}
-		catch ( cl::Error err ) {
+		} catch ( cl::Error err ) {
 			throw OpenCLError("Impossible to copy " + name + " to device: " + toStringValue< cl_int >(err.err()));
 		}
 	}
@@ -235,8 +235,7 @@ template< typename T > void CLData< T >::copyHostToDevice(bool async) throw (Ope
 			clQueue->enqueueWriteBuffer(*deviceData, CL_TRUE, 0, deviceDataSize, getRawHostData(), NULL, &clEvent);
 			clEvent.wait();
 			timerH2D.stop();
-		}
-		catch ( cl::Error err ) {
+		} catch ( cl::Error err ) {
 			timerH2D.reset();
 			throw OpenCLError("Impossible to copy " + name + " to device: " + toStringValue< cl_int >(err.err()));
 		}
@@ -252,8 +251,7 @@ template< typename T > void CLData< T >::copyDeviceToHost(bool async) throw (Ope
 	if ( async ) {
 		try {
 			clQueue->enqueueReadBuffer(*deviceData, CL_FALSE, 0, hostDataSize, getRawHostData(), NULL, NULL);
-		}
-		catch ( cl::Error err ) {
+		} catch ( cl::Error err ) {
 			throw OpenCLError("Impossible to copy " + name + " to host: " + toStringValue< cl_int >(err.err()));
 		}
 	}
@@ -265,8 +263,7 @@ template< typename T > void CLData< T >::copyDeviceToHost(bool async) throw (Ope
 			clQueue->enqueueReadBuffer(*deviceData, CL_TRUE, 0, hostDataSize, getRawHostData(), NULL, &clEvent);
 			clEvent.wait();
 			timerD2H.stop();
-		}
-		catch ( cl::Error err ) {
+		} catch ( cl::Error err ) {
 			timerD2H.reset();
 			throw OpenCLError("Impossible to copy " + name + " to host: " + toStringValue< cl_int >(err.err()));
 		}
@@ -289,32 +286,32 @@ template< typename T > void CLData< T >::dumpDeviceToDisk() throw (OpenCLError) 
 	oFile.close();
 }
 
-template< typename T > inline void CLData< T >::setCLContext(cl::Context *context) {
+template< typename T > inline void CLData< T >::setCLContext(cl::Context * context) {
 	clContext = context;
 }
 
 	
-template< typename T > inline void CLData< T >::setCLQueue(cl::CommandQueue *queue) {
+template< typename T > inline void CLData< T >::setCLQueue(cl::CommandQueue * queue) {
 	clQueue = queue;
 }
 
 
-template< typename T > inline T *CLData< T >::getHostData() {
+template< typename T > inline T * CLData< T >::getHostData() {
 	return hostData;
 }
 
 
-template< typename T > inline T *CLData< T >::getHostDataAt(long long unsigned int startingPoint) {
+template< typename T > inline T * CLData< T >::getHostDataAt(long long unsigned int startingPoint) {
 	return &(hostData[startingPoint]);
 }
 
 
-template< typename T > inline void *CLData< T >::getRawHostData() {
+template< typename T > inline void * CLData< T >::getRawHostData() {
 	return reinterpret_cast< void * >(hostData);
 }
 
 
-template< typename T > inline void *CLData< T >::getRawHostDataAt(long long unsigned int startingPoint) {
+template< typename T > inline void * CLData< T >::getRawHostDataAt(long long unsigned int startingPoint) {
 	return reinterpret_cast< void * >(&(hostData[startingPoint]));
 }
 
@@ -329,7 +326,7 @@ template< typename T > inline T CLData< T >::operator[](long long unsigned int i
 }
 
 
-template< typename T > inline cl::Buffer *CLData< T >::getDeviceData() {
+template< typename T > inline cl::Buffer * CLData< T >::getDeviceData() {
 	return deviceData;
 }
 
@@ -344,12 +341,12 @@ template< typename T > inline string CLData< T >::getName() const {
 }
 
 	
-template< typename T > inline Timer& CLData< T >::getH2DTimer() {
+template< typename T > inline Timer & CLData< T >::getH2DTimer() {
 	return timerH2D;
 }
 
 
-template< typename T > inline Timer& CLData< T >::getD2HTimer() {
+template< typename T > inline Timer & CLData< T >::getD2HTimer() {
 	return timerD2H;
 }
 
@@ -357,4 +354,3 @@ template< typename T > inline Timer& CLData< T >::getD2HTimer() {
 } // isa
 
 #endif // CL_DATA_HPP
-
