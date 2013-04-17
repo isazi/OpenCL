@@ -30,11 +30,9 @@ using std::out_of_range;
 
 #include <Timer.hpp>
 #include <Exceptions.hpp>
-#include <GPUData.hpp>
 #include <utils.hpp>
 using isa::utils::Timer;
 using isa::Exceptions::OpenCLError;
-using isa::OpenCL::GPUData;
 using isa::utils::toStringValue;
 
 
