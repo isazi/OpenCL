@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012
+ * Copyright (C) 2013
  * Alessio Sclocco <a.sclocco@vu.nl>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,14 +36,14 @@ using std::pow;
 #include <InitializeOpenCL.hpp>
 #include <CLData.hpp>
 #include <Exceptions.hpp>
-#include <kernels/VectorAdd.hpp>
+#include <kernels/Copy.hpp>
 #include <utils.hpp>
 
 using isa::utils::ArgumentList;
 using isa::OpenCL::initializeOpenCL;
 using isa::OpenCL::CLData;
 using isa::Exceptions::OpenCLError;
-using isa::OpenCL::VectorAdd;
+using isa::OpenCL::Copy;
 using isa::utils::same;
 
 
@@ -89,7 +89,6 @@ int main(int argc, char *argv[]) {
 
 	CLData< float > *A = new CLData< float >("A", true);
 	CLData< float > *B = new CLData< float >("B", true);
-	CLData< float > *C = new CLData< float >("C", true);
 
 	A->setCLContext(oclContext);
 	A->setCLQueue(&(oclQueues->at(device)[0]));
@@ -97,56 +96,38 @@ int main(int argc, char *argv[]) {
 	B->setCLContext(oclContext);
 	B->setCLQueue(&(oclQueues->at(device)[0]));
 	B->allocateHostData(arrayDim);
-	C->setCLContext(oclContext);
-	C->setCLQueue(&(oclQueues->at(device)[0]));
-	C->allocateHostData(arrayDim);
 	try {
-		A->setDeviceReadOnly();
+		A->setDeviceWriteOnly();
 		A->allocateDeviceData();
 		B->setDeviceReadOnly();
 		B->allocateDeviceData();
-		C->setDeviceWriteOnly();
-		C->allocateDeviceData();
 	} catch ( OpenCLError err ) {
 		cerr << err.what() << endl;
 		return 1;
 	}
 
-	VectorAdd< float > *vectorAdd = new VectorAdd< float >("float");
+	Copy< float > *Copy = new Copy< float >("float");
 	try {
-		vectorAdd->bindOpenCL(oclContext, &(oclDevices->at(device)), &(oclQueues->at(device)[0]));
-		vectorAdd->setNrThreadsPerBlock(nrThreads);
-		vectorAdd->setNrThreads(arrayDim);
-		vectorAdd->setNrRows(nrRows);
-		vectorAdd->generateCode();
+		Copy->bindOpenCL(oclContext, &(oclDevices->at(device)), &(oclQueues->at(device)[0]));
+		Copy->setNrThreadsPerBlock(nrThreads);
+		Copy->setNrThreads(arrayDim);
+		Copy->setNrRows(nrRows);
+		Copy->generateCode();
 
-		A->copyHostToDevice(true);
 		B->copyHostToDevice(true);
 		for ( unsigned int iter = 0; iter < nrIterations; iter++ ) {
-			(*vectorAdd)(A, B, C);
+			(*Copy)(A, B);
 		}
-		C->copyDeviceToHost();
+		A->copyDeviceToHost();
 	} catch ( OpenCLError err ) {
 		cerr << err.what() << endl;
 		return 1;
 	}
 
 	cout << endl;
-	cout << "Time \t\t" << (vectorAdd->getTimer()).getAverageTime() << endl;
-	cout << "GFLOP/s \t" << vectorAdd->getGFLOP() / (vectorAdd->getTimer()).getAverageTime() << endl;
-	cout << "GB/s \t\t" << vectorAdd->getGB() / (vectorAdd->getTimer()).getAverageTime() << endl;
+	cout << "Time \t\t" << (Copy->getTimer()).getAverageTime() << endl;
+	cout << "GB/s \t\t" << Copy->getGB() / (Copy->getTimer()).getAverageTime() << endl;
 	cout << endl;
-
-	for ( unsigned int item = 0; item < arrayDim; item++ ) {
-		float value = (A->getHostData())[item] + (B->getHostData())[item];
-
-		if ( ! same(value, (C->getHostData())[item]) ) {
-			cerr << "Error at item " << item << "." << endl;
-			return 1;
-		}
-	}
-
-	cout << endl << "Test passed." << endl << endl;
 
 	return 0;
 }

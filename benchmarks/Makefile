@@ -13,10 +13,14 @@ LDFLAGS         := -lm -lOpenCL
 CC		:= g++
 LINKER		:= g++
 
-all: clean vectoradd
+all: clean VectorAdd Copy
 
 VectorAdd: VectorAdd.cpp
 	$(LINKER) -o ~/bin/VectorAdd $(INCLUDES) $(LIBS) VectorAdd.cpp $(CFLAGS) $(LDFLAGS)
 
+Copy: Copy.cpp
+	$(LINKER) -o ~/bin/Copy $(INCLUDES) $(LIBS) Copy.cpp $(CFLAGS) $(LDFLAGS)
+
 clean:
 	rm -f ~/bin/VectorAdd
+	rm -f ~/bin/Copy

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011
+ * Copyright (C) 2013
  * Alessio Sclocco <a.sclocco@vu.nl>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,19 +36,19 @@ using isa::Exceptions::OpenCLError;
 using isa::utils::giga;
 
 
-#ifndef VECTOR_ADD_HPP
-#define VECTOR_ADD_HPP
+#ifndef COPY_HPP
+#define COPY_HPP
 
 namespace isa {
 
 namespace OpenCL {
 
-template < typename T > class VectorAdd : public Kernel< T > {
+template < typename T > class Copy : public Kernel< T > {
 public:
-	VectorAdd(string dataType);
+	Copy(string dataType);
 
 	void generateCode() throw (OpenCLError);
-	void operator()(CLData< T > * a, CLData< T > * b, CLData< T > * c) throw (OpenCLError);
+	void operator()(CLData< T > * a, CLData< T > * b) throw (OpenCLError);
 
 	inline void setNrThreadsPerBlock(unsigned int threads);
 	inline void setNrThreads(unsigned int threads);
@@ -63,56 +63,51 @@ private:
 
 // Implementation
 
-template< typename T > VectorAdd< T >::VectorAdd(string dataType) : Kernel< T >("VectorAdd", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0) {}
+template< typename T > Copy< T >::Copy(string dataType) : Kernel< T >("Copy", dataType), nrThreadsPerBlock(0), nrThreads(0), nrRows(0) {}
 
 
-template< typename T > void VectorAdd< T >::generateCode() throw (OpenCLError) {
-	long long unsigned int ops = static_cast< long long unsigned int >(nrThreads);
-	long long unsigned int memOps = ops * 3 * sizeof(T);
-
-	this->arInt = ops / static_cast< double >(memOps);
-	this->gflop = giga(ops);
+template< typename T > void Copy< T >::generateCode() throw (OpenCLError) {
+	long long unsigned int memOps = static_cast< long long unsigned int >(nrThreads) * 2 * sizeof(T);
 	this->gb = giga(memOps);
 	
 	delete this->code;
 	this->code = new string();
-	*(this->code) = "__kernel void " + this->name + "(__global const " + this->dataType + " * const restrict A, __global const " +  this->dataType + " * const restrict B, __global " + this->dataType + " * constr restrict C) {\n"
+	*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + " * const restrict A, __global const " +  this->dataType + " * constr restrict B) {\n"
 		"const unsigned int id = ( get_global_id(1) * get_global_size(0) ) + get_global_id(0);\n"
-		+ this->dataType + " value = A[id] + B[id];\n"
-		"C[id] = value;\n"
+		+ this->dataType + " value = B[id];\n"
+		"A[id] = value;\n"
 		"}";
 
 	this->compile();
 }
 
 
-template< typename T > void VectorAdd< T >::operator()(CLData< T > * a, CLData< T > * b, CLData< T > * c) throw (OpenCLError) {
+template< typename T > void Copy< T >::operator()(CLData< T > * a, CLData< T > * b) throw (OpenCLError) {
 	cl::NDRange globalSize(nrThreads / nrRows, nrRows);
 	cl::NDRange localSize(nrThreadsPerBlock, 1);
 
 	this->setArgument(0, *(a->getDeviceData()));
 	this->setArgument(1, *(b->getDeviceData()));
-	this->setArgument(2, *(c->getDeviceData()));
 
 	this->run(globalSize, localSize);
 }
 
 
-template< typename T > inline void VectorAdd< T >::setNrThreadsPerBlock(unsigned int threads) {
+template< typename T > inline void Copy< T >::setNrThreadsPerBlock(unsigned int threads) {
 	nrThreadsPerBlock = threads;
 }
 
 
-template< typename T > inline void VectorAdd< T >::setNrThreads(unsigned int threads) {
+template< typename T > inline void Copy< T >::setNrThreads(unsigned int threads) {
 	nrThreads = threads;
 }
 
 
-template< typename T > inline void VectorAdd< T >::setNrRows(unsigned int rows) {
+template< typename T > inline void Copy< T >::setNrRows(unsigned int rows) {
 	nrRows = rows;
 }
 
 } // OpenCL
 } // isa
 
-#endif // VECTOR_ADD_HPP
+#endif // COPY_HPP
