@@ -72,7 +72,7 @@ template< typename T > void Copy< T >::generateCode() throw (OpenCLError) {
 	
 	delete this->code;
 	this->code = new string();
-	*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + " * const restrict A, __global const " +  this->dataType + " * constr restrict B) {\n"
+	*(this->code) = "__kernel void " + this->name + "(__global " + this->dataType + " * const restrict A, __global const " +  this->dataType + " * const restrict B) {\n"
 		"const unsigned int id = ( get_global_id(1) * get_global_size(0) ) + get_global_id(0);\n"
 		+ this->dataType + " value = B[id];\n"
 		"A[id] = value;\n"
