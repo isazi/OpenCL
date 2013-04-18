@@ -56,7 +56,7 @@ public:
 	void allocateDeviceData(cl::Buffer * data, size_t size);
 	void allocateDeviceData(long long unsigned int nrElements) throw (OpenCLError);
 	void allocateDeviceData() throw (OpenCLError);
-	void allocateSharedeDeviceData() throw (OpenCLError);
+	void allocateSharedDeviceData() throw (OpenCLError);
 	void deleteDeviceData();
 	inline void setDeviceReadOnly();
 	inline void setDeviceWriteOnly();
