@@ -76,8 +76,8 @@ public:
 	inline void * getRawHostData();
 	inline void * getRawHostDataAt(long long unsigned int startingPoint);
 	inline size_t getHostDataSize() const;
-	inline const T operator[](long long unsigned int item);
-	inline const T getHostDataItem(long long unsigned int item);
+	inline const T operator[](long long unsigned int item) const;
+	inline const T getHostDataItem(long long unsigned int item) const;
 
 	// Access device data
 	inline cl::Buffer * getDeviceData();
@@ -342,12 +342,12 @@ template< typename T > inline size_t CLData< T >::getHostDataSize() const {
 }
 
 
-template< typename T > inline const T CLData< T >::operator[](long long unsigned int item) {
+template< typename T > inline const T CLData< T >::operator[](long long unsigned int item) const {
 	return hostData[item];
 }
 
 
-template< typename T > inline const T CLData< T >::getHostDataItem(long long unsigned int item) {
+template< typename T > inline const T CLData< T >::getHostDataItem(long long unsigned int item) const {
 	return hostData[item];
 }
 
