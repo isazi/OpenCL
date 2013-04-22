@@ -79,6 +79,9 @@ public:
 	inline const T operator[](long long unsigned int item) const;
 	inline const T getHostDataItem(long long unsigned int item) const;
 
+	// Modify host data
+	inline void setHostDataItem(long long unsigned int item, T value);
+
 	// Access device data
 	inline cl::Buffer * getDeviceData();
 	inline size_t getDeviceDataSize() const;
@@ -359,6 +362,11 @@ template< typename T > inline cl::Buffer * CLData< T >::getDeviceData() {
 
 template< typename T > inline size_t CLData< T >::getDeviceDataSize() const {
 	return deviceDataSize;
+}
+
+
+template< typename T > inline void CLData< T >::setHostDataItem(long long unsigned int item, T value) {
+	hostData[item] = value;
 }
 
 
