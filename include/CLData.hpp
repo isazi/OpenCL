@@ -22,8 +22,10 @@
 #include <string>
 #include <cstring>
 #include <fstream>
+ #include <vector>
 using std::string;
 using std::ofstream;
+using std::vector;
 
 #include <utils.hpp>
 #include <Exceptions.hpp>
@@ -48,7 +50,7 @@ public:
 	inline string getName() const;
 
 	// Allocation of host data
-	void allocateHostData(T * data, size_t size);
+	void allocateHostData(vector < T > * data);
 	void allocateHostData(long long unsigned int nrElements);
 	void deleteHostData();
 	
@@ -60,6 +62,7 @@ public:
 	void deleteDeviceData();
 	inline void setDeviceReadOnly();
 	inline void setDeviceWriteOnly();
+	inline void setDeviceReadWrite();
 
 	// Memory transfers
 	void copyHostToDevice(bool async = false) throw (OpenCLError);
@@ -100,8 +103,7 @@ private:
 	bool deleteHost;
 	bool deviceReadOnly;
 	bool deviceWriteOnly;
-	T * hostData;
-	size_t hostDataSize;
+	vector< T > * hostData;
 	cl::Buffer * deviceData;
 	size_t deviceDataSize;
 
@@ -111,7 +113,7 @@ private:
 
 // Implementations
 
-template< typename T > CLData< T >::CLData(string name, bool deletePolicy) : clContext(0), clQueue(0), timerH2D(Timer("H2D")), timerD2H(Timer("D2H")), deleteHost(deletePolicy), deviceReadOnly(false), deviceWriteOnly(false), hostData(0), hostDataSize(0), deviceData(0), deviceDataSize(0), name(name) {}
+template< typename T > CLData< T >::CLData(string name, bool deletePolicy) : clContext(0), clQueue(0), timerH2D(Timer("H2D")), timerD2H(Timer("D2H")), deleteHost(deletePolicy), deviceReadOnly(false), deviceWriteOnly(false), hostData(0), deviceData(0), deviceDataSize(0), name(name) {}
 
 
 template< typename T > CLData< T >::~CLData() {
@@ -120,32 +122,23 @@ template< typename T > CLData< T >::~CLData() {
 }
 
 
-template< typename T > void CLData< T >::allocateHostData(T * data, size_t size) {
+template< typename T > void CLData< T >::allocateHostData(vector< T > * data) {
 	deleteHostData();
-
 	hostData = data;
-	hostDataSize = size;
 }
 
 
 template< typename T > void CLData< T >::allocateHostData(long long unsigned int nrElements) {
 	size_t newSize = nrElements * sizeof(T);
 
-	if ( newSize != hostDataSize ) {
-		deleteHostData();
-
-		hostData = new T [nrElements];
-		hostDataSize = newSize;
-	}
-	memset(getRawHostData(), 0, newSize);
+	deleteHostData();
+	hostData = new vector< T >(newSize);
 }
 
 
 template< typename T > void CLData< T >::deleteHostData() {
-	if ( deleteHost && hostDataSize != 0 ) {
-		delete [] hostData;
-		hostData = 0;
-		hostDataSize = 0;
+	if ( deleteHost != 0 ) {
+		delete hostData;
 	}
 }
 
@@ -160,6 +153,7 @@ template< typename T > void CLData< T >::allocateDeviceData(cl::Buffer * data, s
 
 template< typename T > void CLData< T >::allocateDeviceData(long long unsigned int nrElements) throw (OpenCLError) {
 	size_t newSize = nrElements * sizeof(T);
+
 	if ( newSize != deviceDataSize ) {
 		deleteDeviceData();
 
@@ -235,6 +229,12 @@ template< typename T > inline void CLData< T >::setDeviceReadOnly() {
 
 template< typename T > inline void CLData< T >::setDeviceWriteOnly() {
 	deviceWriteOnly = true;
+	deviceReadOnly = false;
+}
+
+
+template< typename T > inline void CLData< T >::setDeviceReadWrite() {
+	deviceWriteOnly = false;
 	deviceReadOnly = false;
 }
 
@@ -321,37 +321,37 @@ template< typename T > inline void CLData< T >::setCLQueue(cl::CommandQueue * qu
 
 
 template< typename T > inline T * CLData< T >::getHostData() {
-	return hostData;
+	return hostData->data();
 }
 
 
 template< typename T > inline T * CLData< T >::getHostDataAt(long long unsigned int startingPoint) {
-	return &(hostData[startingPoint]);
+	return hostData->at(startingPoint);
 }
 
 
 template< typename T > inline void * CLData< T >::getRawHostData() {
-	return reinterpret_cast< void * >(hostData);
+	return reinterpret_cast< void * >(hostData->data());
 }
 
 
 template< typename T > inline void * CLData< T >::getRawHostDataAt(long long unsigned int startingPoint) {
-	return reinterpret_cast< void * >(&(hostData[startingPoint]));
+	return reinterpret_cast< void * >(hostData->data() + startingPoint);
 }
 
 
 template< typename T > inline size_t CLData< T >::getHostDataSize() const {
-	return hostDataSize;
+	return hostData->size();
 }
 
 
 template< typename T > inline const T CLData< T >::operator[](long long unsigned int item) const {
-	return hostData[item];
+	return hostData->at(item);
 }
 
 
 template< typename T > inline const T CLData< T >::getHostDataItem(long long unsigned int item) const {
-	return hostData[item];
+	return hostData->at(item);
 }
 
 
@@ -366,7 +366,7 @@ template< typename T > inline size_t CLData< T >::getDeviceDataSize() const {
 
 
 template< typename T > inline void CLData< T >::setHostDataItem(long long unsigned int item, T value) {
-	hostData[item] = value;
+	hostData->at(item) = value;
 }
 
 
