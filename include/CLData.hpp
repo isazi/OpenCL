@@ -78,6 +78,7 @@ public:
 	inline T * getHostDataAt(long long unsigned int startingPoint);
 	inline void * getRawHostData();
 	inline void * getRawHostDataAt(long long unsigned int startingPoint);
+	inline vector< T > & getHostDataReference();
 	inline size_t getHostDataSize() const;
 	inline const T operator[](long long unsigned int item) const;
 	inline const T getHostDataItem(long long unsigned int item) const;
@@ -342,6 +343,10 @@ template< typename T > inline size_t CLData< T >::getHostDataSize() const {
 	return hostDataSize;
 }
 
+
+template< typename T > inline vector< T > & CLData< T >::getHostDataReference() {
+	return hostData;
+}
 
 template< typename T > inline const T CLData< T >::operator[](long long unsigned int item) const {
 	return hostData[item];
