@@ -25,7 +25,7 @@
 using std::string;
 using std::make_pair;
 
-#include <kernels/Kernel.hpp>
+#include <Kernel.hpp>
 #include <GPUData.hpp>
 #include <Exceptions.hpp>
 #include <utils.hpp>
