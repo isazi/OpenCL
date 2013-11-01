@@ -13,26 +13,12 @@ LDFLAGS         := -lm -lOpenCL
 CC		:= g++
 LINKER		:= g++
 
-all: clean memset vectoradd timebinning vectorcos localstage
+all: clean memset
 
 memset: Memset.cpp
 	$(LINKER) -o ~/bin/Memset $(INCLUDES) $(LIBS) Memset.cpp $(CFLAGS) $(LDFLAGS)
 
-vectoradd: VectorAdd.cpp
-	$(LINKER) -o ~/bin/VectorAdd $(INCLUDES) $(LIBS) VectorAdd.cpp $(CFLAGS) $(LDFLAGS)
-
-timebinning: TimeBinning.cpp
-	$(LINKER) -o ~/bin/TimeBinning $(INCLUDES) $(LIBS) TimeBinning.cpp $(CFLAGS) $(LDFLAGS)
-
-vectorcos: VectorCos.cpp
-	$(LINKER) -o ~/bin/VectorCos $(INCLUDES) $(LIBS) VectorCos.cpp $(CFLAGS) $(LDFLAGS)
-
-localstage: LocalStage.cpp
-	$(LINKER) -o ~/bin/LocalStage $(INCLUDES) $(LIBS) LocalStage.cpp $(CFLAGS) $(LDFLAGS)
-
 clean:
 	rm -f ~/bin/Memset
-	rm -f ~/bin/VectorAdd
-	rm -f ~/bin/TimeBinning
-	rm -f ~/bin/VectorCos
+
 

@@ -22,7 +22,7 @@
 #include <string>
 #include <cstring>
 #include <fstream>
- #include <vector>
+#include <vector>
 using std::string;
 using std::ofstream;
 using std::vector;
@@ -84,6 +84,7 @@ public:
 	inline const T getHostDataItem(long long unsigned int item) const;
 
 	// Modify host data
+	inline void blankHostData();
 	inline void setHostDataItem(long long unsigned int item, T value);
 
 	// Access device data
@@ -365,6 +366,11 @@ template< typename T > inline cl::Buffer * CLData< T >::getDeviceData() {
 
 template< typename T > inline size_t CLData< T >::getDeviceDataSize() const {
 	return deviceDataSize;
+}
+
+
+template< typename T > inline void CLData< T >::blankHostData() {
+	memset(this->getRawHostData(), 0, this->getHostDataSize());
 }
 
 
