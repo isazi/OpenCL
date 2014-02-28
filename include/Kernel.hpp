@@ -1,38 +1,38 @@
-/*
- * Copyright (C) 2012
- * Alessio Sclocco <a.sclocco@vu.nl>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
+//
+// Copyright (C) 2012
+// Alessio Sclocco <a.sclocco@vu.nl>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+//
 
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #include <string>
-#include <utility>
-#include <vector>
-#include <stdexcept>
 using std::string;
+#include <utility>
 using std::make_pair;
+#include <vector>
 using std::vector;
+#include <stdexcept>
 using std::out_of_range;
+#include <cmath>
 
 #include <Timer.hpp>
-#include <Exceptions.hpp>
-#include <utils.hpp>
 using isa::utils::Timer;
+#include <Exceptions.hpp>
 using isa::Exceptions::OpenCLError;
+#include <utils.hpp>
 using isa::utils::toStringValue;
 
 
@@ -47,7 +47,7 @@ public:
 	Kernel(string name, string dataType);
 	~Kernel();
 
-	inline void bindOpenCL(cl::Context *context, cl::Device *device, cl::CommandQueue *queue);
+	inline void bindOpenCL(cl::Context * context, cl::Device * device, cl::CommandQueue * queue);
 	inline void setAsync(bool asy);
 	inline void setNvidia(bool nvd);
 
@@ -55,16 +55,20 @@ public:
 	inline string getCode() const;
 	inline string getDataType() const;
 	inline string getBuildLog() const;
-	char *getBinary(unsigned int binary);
+	char * getBinary(unsigned int binary);
 	inline Timer& getTimer();
 	inline double getArithmeticIntensity() const;
 	inline double getGFLOP() const;
 	inline double getGB() const;
+	inline double getGFLOPs() const;
+	inline double getGFLOPsErr() const;
+	inline double getGBs() const;
+	inline double getGBsErr() const;
 
 protected:
 	void compile() throw (OpenCLError);
 	template< typename A > inline void setArgument(unsigned int id, A param) throw (OpenCLError);
-	void run(cl::NDRange &globalSize, cl::NDRange &localSize) throw (OpenCLError);
+	void run(cl::NDRange & globalSize, cl::NDRange & localSize) throw (OpenCLError);
 
 	bool async;
 	bool nvidia;
@@ -83,12 +87,16 @@ protected:
 	double arInt;
 	double gflop;
 	double gb;
+	double gflops;
+	double gflopsErr;
+	double gbs;
+	double gbsErr;
 };
 
 
 // Implementation
 
-template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), nvidia(false), name(name), code(0), dataType(dataType), buildLog(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(Timer(name)), binaries(vector< char * >()), arInt(0.0), gflop(0.0), gb(0.0) {}
+template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), nvidia(false), name(name), code(0), dataType(dataType), buildLog(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(Timer(name)), binaries(vector< char * >()), arInt(0.0), gflop(0.0), gb(0.0), gflops(0.0), gflopsErr(0.0), gbs(0.0), gbsErr(0.0) {}
 
 
 template< typename T > Kernel< T >::~Kernel() {
@@ -166,6 +174,22 @@ template< typename T > void Kernel< T >::run(cl::NDRange &globalSize, cl::NDRang
 			clCommands->enqueueNDRangeKernel(*kernel, cl::NullRange, globalSize, localSize, NULL, &clEvent);
 			clEvent.wait();
 			timer.stop();
+			if ( timer.getNrRuns() == 1 ) {
+				gflops = gflop / timer.getLastRunTime();
+				gflopsErr = 0.0;
+				gbs = gb / timer.getLastRunTime();
+				gbsErr = 0.0;
+			} else {
+				double oldGFLOPs = gflops;
+				double newGFLOPs = gflop / timer.getLastRunTime();
+				double oldGBs = gbs;
+				double newGBs = gb / timer.getLastRunTime();
+
+				gflops = oldGFLOPs + ((newGFLOPs - oldGFLOPs) / timer.getNrRuns());
+				gflopsErr += (newGFLOPs - oldGFLOPs) * (newGFLOPs - gflops);
+				gbs = oldGBs + ((newGBs - oldGBs) / timer.getNrRuns());
+				gbsErr += (newGBs - oldGBs) * (newGBs - gbs);
+			}
 		}
 		catch ( cl::Error err ) {
 			timer.reset();
@@ -249,8 +273,23 @@ template< typename T > inline double Kernel< T >::getGB() const {
 	return gb;
 }
 
+template< typename T > inline double Kernel< T >::getGFLOPs() const {
+	return gflops;
+}
+
+template< typename T > inline double Kernel< T >::getGFLOPsErr() const {
+	return sqrt(gflopsErr / timer.getNrRuns());
+}
+
+template< typename T > inline double Kernel< T >::getGBs() const {
+	return gbs;
+}
+
+template< typename T > inline double Kernel< T >::getGBsErr() const {
+	return sqrt(gbsErr / timer.getNrRuns());
+}
+
 } // OpenCL
 } // isa
 
 #endif // KERNEL_HPP
-
