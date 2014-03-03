@@ -30,6 +30,8 @@ using std::out_of_range;
 
 #include <Timer.hpp>
 using isa::utils::Timer;
+#include <Stats.hpp>
+using isa::utils::Stats;
 #include <Exceptions.hpp>
 using isa::Exceptions::OpenCLError;
 #include <utils.hpp>
@@ -87,16 +89,14 @@ protected:
 	double arInt;
 	double gflop;
 	double gb;
-	double gflops;
-	double gflopsErr;
-	double gbs;
-	double gbsErr;
+	Stats< double > GFLOPs;
+	Stats< double > GBs;
 };
 
 
 // Implementation
 
-template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), nvidia(false), name(name), code(0), dataType(dataType), buildLog(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(Timer(name)), binaries(vector< char * >()), arInt(0.0), gflop(0.0), gb(0.0), gflops(0.0), gflopsErr(0.0), gbs(0.0), gbsErr(0.0) {}
+template< typename T > Kernel< T >::Kernel(string name, string dataType) : async(false), nvidia(false), name(name), code(0), dataType(dataType), buildLog(string()), kernel(0), clContext(0), clDevice(0), clCommands(0), clEvent(cl::Event()), timer(Timer(name)), binaries(vector< char * >()), arInt(0.0), gflop(0.0), gb(0.0), GFLOPs(Stats< double >()), GBs(Stats< double >()) {}
 
 
 template< typename T > Kernel< T >::~Kernel() {
@@ -117,13 +117,11 @@ template< typename T > void Kernel< T >::compile() throw (OpenCLError) {
 		if ( nvidia ) {
 			program->build(vector< cl::Device >(1, *clDevice), "-cl-mad-enable -cl-nv-verbose", NULL, NULL);
 			program->getInfo(CL_PROGRAM_BINARIES, &binaries);
-		}
-		else {
+		} else {
 			program->build(vector< cl::Device >(1, *clDevice), "-cl-mad-enable", NULL, NULL);
 		}
 		buildLog = program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(*clDevice);
-	}
-	catch ( cl::Error err ) {	
+	} catch ( cl::Error err ) {	
 		throw OpenCLError("It is not possible to build the " + name + " OpenCL program: " + program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(*clDevice) + ".");
 	}
 	
@@ -132,8 +130,7 @@ template< typename T > void Kernel< T >::compile() throw (OpenCLError) {
 	}
 	try {
 		kernel = new cl::Kernel(*program, name.c_str(), NULL);
-	}
-	catch ( cl::Error err ) {
+	} catch ( cl::Error err ) {
 		delete program;
 		throw OpenCLError("It is not possible to create the kernel for " + name + ": " + toStringValue< cl_int >(err.err()) + ".");
 	}
@@ -148,8 +145,7 @@ template< typename T > template< typename A > inline void Kernel< T >::setArgume
 
 	try {
 		kernel->setArg(id, param);
-	}
-	catch ( cl::Error err ) {
+	} catch ( cl::Error err ) {
 		throw OpenCLError("Impossible to set " + name + " arguments: " + toStringValue< cl_int >(err.err()) + ".");
 	}
 }
@@ -163,35 +159,18 @@ template< typename T > void Kernel< T >::run(cl::NDRange &globalSize, cl::NDRang
 	if ( async ) {
 		try {
 			clCommands->enqueueNDRangeKernel(*kernel, cl::NullRange, globalSize, localSize, NULL, NULL);
-		}
-		catch ( cl::Error err ) {
+		} catch ( cl::Error err ) {
 			throw OpenCLError("Impossible to run " + name + ": " + toStringValue< cl_int >(err.err()) + ".");
 		}
-	}
-	else {
+	} else {
 		try {
 			timer.start();
 			clCommands->enqueueNDRangeKernel(*kernel, cl::NullRange, globalSize, localSize, NULL, &clEvent);
 			clEvent.wait();
 			timer.stop();
-			if ( timer.getNrRuns() == 1 ) {
-				gflops = gflop / timer.getLastRunTime();
-				gflopsErr = 0.0;
-				gbs = gb / timer.getLastRunTime();
-				gbsErr = 0.0;
-			} else {
-				double oldGFLOPs = gflops;
-				double newGFLOPs = gflop / timer.getLastRunTime();
-				double oldGBs = gbs;
-				double newGBs = gb / timer.getLastRunTime();
-
-				gflops = oldGFLOPs + ((newGFLOPs - oldGFLOPs) / timer.getNrRuns());
-				gflopsErr += (newGFLOPs - oldGFLOPs) * (newGFLOPs - gflops);
-				gbs = oldGBs + ((newGBs - oldGBs) / timer.getNrRuns());
-				gbsErr += (newGBs - oldGBs) * (newGBs - gbs);
-			}
-		}
-		catch ( cl::Error err ) {
+			GFLOPs.addElement(gflop / timer.getLastRunTime());
+			GBs.addElement(gb / timer.getLastRunTime());
+		} catch ( cl::Error err ) {
 			timer.reset();
 			throw OpenCLError("Impossible to run " + name + ": " + toStringValue< cl_int >(err.err()) + ".");
 		}
@@ -244,8 +223,7 @@ template< typename T > char *Kernel< T >::getBinary(unsigned int binary) {
 	if ( nvidia ) {
 		try {
 			return binaries.at(binary);
-		}
-		catch ( out_of_range err ) {
+		} catch ( out_of_range err ) {
 			return 0;
 		}
 	}
@@ -274,19 +252,19 @@ template< typename T > inline double Kernel< T >::getGB() const {
 }
 
 template< typename T > inline double Kernel< T >::getGFLOPs() const {
-	return gflops;
+	return GFLOPs.getAverage();
 }
 
 template< typename T > inline double Kernel< T >::getGFLOPsErr() const {
-	return sqrt(gflopsErr / timer.getNrRuns());
+	return GFLOPs.getStdDev();
 }
 
 template< typename T > inline double Kernel< T >::getGBs() const {
-	return gbs;
+	return GBs.getAverage();
 }
 
 template< typename T > inline double Kernel< T >::getGBsErr() const {
-	return sqrt(gbsErr / timer.getNrRuns());
+	return GBs.getStdDev();
 }
 
 } // OpenCL
