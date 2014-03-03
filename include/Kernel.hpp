@@ -52,6 +52,7 @@ public:
 	inline void bindOpenCL(cl::Context * context, cl::Device * device, cl::CommandQueue * queue);
 	inline void setAsync(bool asy);
 	inline void setNvidia(bool nvd);
+	inline void resetStats();
 
 	inline string getName() const;
 	inline string getCode() const;
@@ -192,6 +193,11 @@ template< typename T > inline void Kernel< T >::setAsync(bool asy) {
 
 template< typename T > inline void Kernel< T >::setNvidia(bool nvd) {
 	nvidia = nvd;
+}
+
+template< typename T > inline void Kernel< T >::resetStats() {
+	GFLOPs.reset();
+	GBs.reset();
 }
 
 
