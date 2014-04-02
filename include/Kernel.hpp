@@ -48,7 +48,7 @@ public:
 	inline void bindOpenCL(cl::Context * context, cl::Device * device, cl::CommandQueue * queue);
 	inline void setAsync(bool asy);
 	inline void setNvidia(bool nvd);
-	inline void resetStats();
+	inline void reset();
 
 	inline string getName() const;
 	inline string getCode() const;
@@ -168,7 +168,7 @@ template< typename T > void Kernel< T >::run(cl::NDRange &globalSize, cl::NDRang
 			GFLOPs.addElement(gflop / timer.getLastRunTime());
 			GBs.addElement(gb / timer.getLastRunTime());
 		} catch ( cl::Error err ) {
-			timer.reset();
+			this->reset();
 			throw OpenCLError("Impossible to run " + name + ": " + toStringValue< cl_int >(err.err()) + ".");
 		}
 	}
@@ -191,9 +191,10 @@ template< typename T > inline void Kernel< T >::setNvidia(bool nvd) {
 	nvidia = nvd;
 }
 
-template< typename T > inline void Kernel< T >::resetStats() {
+template< typename T > inline void Kernel< T >::reset() {
 	GFLOPs.reset();
 	GBs.reset();
+	timer.reset();
 }
 
 
