@@ -15,22 +15,18 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #include <vector>
-using std::vector;
 
 #include <utils.hpp>
 #include <Exceptions.hpp>
-using isa::utils::toStringValue;
-using isa::Exceptions::OpenCLError;
 
 
 #ifndef INITIALIZE_OPENCL_HPP
 #define INITIALIZE_OPENCL_HPP
 
 namespace isa {
-
 namespace OpenCL {
 
-void initializeOpenCL(unsigned int platform, unsigned int nrQueues, vector< cl::Platform > *platforms, cl::Context *context, vector< cl::Device > *devices, vector< vector< cl::CommandQueue > > *queues) throw (OpenCLError) {
+void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector< cl::Platform > * platforms, cl::Context * context, std::vector< cl::Device > * devices, std::vector< vector< cl::CommandQueue > > * queues) throw (OpenCLError) {
 	try {
 		unsigned int nrDevices = 0;
 
@@ -47,9 +43,9 @@ void initializeOpenCL(unsigned int platform, unsigned int nrQueues, vector< cl::
 			}
 		}
 	}
-	catch ( cl::Error e ) {
-		string err_s = toStringValue< cl_int >(e.err());
-		throw OpenCLError("Impossible to initialize OpenCL: " + err_s + ".");
+	catch ( cl::Error &e ) {
+		string err_s = isa::utils::toString< cl_int >(e.err());
+		throw isa::Exceptions::OpenCLError("Impossible to initialize OpenCL: " + err_s + ".");
 	}
 }
 
