@@ -31,7 +31,7 @@ namespace OpenCL {
 cl::Kernel * compile(const std::string & name, const std::string & code, const std::string & flags, cl::Context & clContext, cl::Device & clDevice) throw (OpenCLError);
 
 // Implementations
-void compile(std::string code) throw (OpenCLError) {
+cl::Kernel * compile(const std::string & name, const std::string & code, const std::string & flags, cl::Context & clContext, cl::Device & clDevice) throw (OpenCLError) {
   cl::Program * program = 0;
   cl::Kernel * kernel = 0;
 	try {
