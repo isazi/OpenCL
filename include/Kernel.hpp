@@ -37,7 +37,7 @@ cl::Kernel * compile(const std::string & name, const std::string & code, const s
 	try {
 		cl::Program::Sources sources(1, std::make_pair(code.c_str(), code.length()));
     program = new cl::Program(clContext, sources, NULL);
-    program->build(std::vector< cl::Device >(1, clDevice), flags, NULL, NULL);
+    program->build(std::vector< cl::Device >(1, clDevice), flags.c_str(), NULL, NULL);
 	} catch ( cl::Error &err ) {
 		throw isa::Exceptions::OpenCLError("It is not possible to build the OpenCL program: " + program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(clDevice) + ".");
 	}
@@ -45,7 +45,7 @@ cl::Kernel * compile(const std::string & name, const std::string & code, const s
 		kernel = new cl::Kernel(*program, name.c_str(), NULL);
     delete program;
 	} catch ( cl::Error &err ) {
-		throw isa::Exceptions::OpenCLError("It is not possible to create the kernel for " + name + ": " + toString< cl_int >(err.err()) + ".");
+		throw isa::Exceptions::OpenCLError("It is not possible to create the kernel for " + name + ": " + isa::utils::toString< cl_int >(err.err()) + ".");
 	}
 
   return kernel;
