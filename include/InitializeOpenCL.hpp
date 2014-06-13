@@ -37,7 +37,7 @@ void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector<
 		*devices = context->getInfo<CL_CONTEXT_DEVICES>();
 		nrDevices = devices->size();
 		for ( unsigned int device = 0; device < nrDevices; device++ ) {
-			queues->push_back(vector< cl::CommandQueue >());
+			queues->push_back(std::vector< cl::CommandQueue >());
 			for ( unsigned int queue = 0; queue < nrQueues; queue++ ) {
 				(queues->at(device)).push_back(cl::CommandQueue(*context, devices->at(device)));;
 			}
