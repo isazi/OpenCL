@@ -28,10 +28,10 @@
 namespace isa {
 namespace OpenCL {
 
-cl::Kernel * compile(const std::string & name, const std::string & code, const std::string & flags, cl::Context & clContext, cl::Device & clDevice) throw (OpenCLError);
+cl::Kernel * compile(const std::string & name, const std::string & code, const std::string & flags, cl::Context & clContext, cl::Device & clDevice) throw (isa::Exceptions::OpenCLError);
 
 // Implementations
-cl::Kernel * compile(const std::string & name, const std::string & code, const std::string & flags, cl::Context & clContext, cl::Device & clDevice) throw (OpenCLError) {
+cl::Kernel * compile(const std::string & name, const std::string & code, const std::string & flags, cl::Context & clContext, cl::Device & clDevice) throw (isa::Exceptions::OpenCLError) {
   cl::Program * program = 0;
   cl::Kernel * kernel = 0;
 	try {
@@ -39,13 +39,13 @@ cl::Kernel * compile(const std::string & name, const std::string & code, const s
     program = new cl::Program(clContext, sources, NULL);
     program->build(std::vector< cl::Device >(1, clDevice), flags, NULL, NULL);
 	} catch ( cl::Error &err ) {
-		throw OpenCLError("It is not possible to build the OpenCL program: " + program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(clDevice) + ".");
+		throw isa::Exceptions::OpenCLError("It is not possible to build the OpenCL program: " + program->getBuildInfo< CL_PROGRAM_BUILD_LOG >(clDevice) + ".");
 	}
 	try {
 		kernel = new cl::Kernel(*program, name.c_str(), NULL);
     delete program;
 	} catch ( cl::Error &err ) {
-		throw OpenCLError("It is not possible to create the kernel for " + name + ": " + toString< cl_int >(err.err()) + ".");
+		throw isa::Exceptions::OpenCLError("It is not possible to create the kernel for " + name + ": " + toString< cl_int >(err.err()) + ".");
 	}
 
   return kernel;
