@@ -14,6 +14,7 @@
 
 #include <string>
 #include <exception>
+#include <typeinfo>
 
 #ifndef EXCEPTIONS_HPP
 #define EXCEPTIONS_HPP
@@ -25,7 +26,6 @@ namespace OpenCL {
 class OpenCLError : public std::exception {
 public:
 	OpenCLError(std::string message);
-	~OpenCLError() throw ();
 
 	const char *what() const throw ();
 
