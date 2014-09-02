@@ -43,8 +43,7 @@ void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector<
 			}
 		}
 	}	catch ( cl::Error &e ) {
-		string err_s = isa::utils::toString< cl_int >(e.err());
-		throw isa::OpenCL::OpenCLError("Impossible to initialize OpenCL: " + err_s + ".");
+		throw isa::OpenCL::OpenCLError("Impossible to initialize OpenCL: " + isa::utils::toString(e.err()) + ".");
 	}
 }
 
