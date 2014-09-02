@@ -26,6 +26,7 @@ namespace OpenCL {
 class OpenCLError : public std::exception {
 public:
 	OpenCLError(std::string message);
+	~OpenCLError() throw ();
 
 	const char *what() const throw ();
 
@@ -36,6 +37,8 @@ private:
 
 // Implementations
 OpenCLError::OpenCLError(std::string message) : message(message) {}
+	
+OpenCLError::~OpenCLError() throw () {}
 
 const char * OpenCLError::what() const throw () {
   return (this->message).c_str();
