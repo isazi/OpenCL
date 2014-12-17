@@ -32,6 +32,7 @@ void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector<
 
 		cl::Platform::get(platforms);
 		cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms->at(platform))(), 0};
+    context = new cl::Context();
 		*context = cl::Context(CL_DEVICE_TYPE_ALL, properties);
 
 		*devices = context->getInfo<CL_CONTEXT_DEVICES>();
