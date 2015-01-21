@@ -26,26 +26,7 @@
 namespace isa {
 namespace OpenCL {
 
-void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector< cl::Platform > * platforms, cl::Context * context, std::vector< cl::Device > * devices, std::vector< std::vector< cl::CommandQueue > > * queues) throw (isa::OpenCL::OpenCLError) {
-	try {
-		unsigned int nrDevices = 0;
-
-		cl::Platform::get(platforms);
-		cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms->at(platform))(), 0};
-		*context = cl::Context(CL_DEVICE_TYPE_ALL, properties);
-
-		*devices = context->getInfo<CL_CONTEXT_DEVICES>();
-		nrDevices = devices->size();
-		for ( unsigned int device = 0; device < nrDevices; device++ ) {
-			queues->push_back(std::vector< cl::CommandQueue >());
-			for ( unsigned int queue = 0; queue < nrQueues; queue++ ) {
-				(queues->at(device)).push_back(cl::CommandQueue(*context, devices->at(device)));;
-			}
-		}
-	}	catch ( cl::Error &e ) {
-		throw isa::OpenCL::OpenCLError("Impossible to initialize OpenCL: " + isa::utils::toString(e.err()) + ".");
-	}
-}
+void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector< cl::Platform > * platforms, cl::Context * context, std::vector< cl::Device > * devices, std::vector< std::vector< cl::CommandQueue > > * queues) throw (isa::OpenCL::OpenCLError)
 
 } // OpenCL
 } // isa
