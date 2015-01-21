@@ -34,16 +34,6 @@ private:
   std::string message;
 };
 
-
-// Implementations
-OpenCLError::OpenCLError(std::string message) : message(message) {}
-	
-OpenCLError::~OpenCLError() throw () {}
-
-const char * OpenCLError::what() const throw () {
-  return (this->message).c_str();
-}
-
 } // OpenCL
 } // isa
 #endif
