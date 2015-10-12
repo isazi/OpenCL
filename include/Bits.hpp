@@ -27,11 +27,11 @@ inline void setBit(std::string & code, const std::string & value, const std::str
 // Implementations
 
 inline void getBit(std::string & code, const std::string & value, const std::string & bit) {
-  code += "convert_uchar((" + value + " >> " + bit + ") & 1)";
+  code += "convert_uchar((" + value + " >> (" + bit + ")) & 1)";
 }
 
 inline void setBit(std::string & code, const std::string & value, const std::string & newBit, const std::string & bit) {
-  code += value + " ^= (-(" + newBit + ") ^ " + value + ") & (1 << " + bit + ");\n";
+  code += value + " ^= (-(" + newBit + ") ^ " + value + ") & (1 << (" + bit + "));\n";
 }
 
 } // OpenCL
