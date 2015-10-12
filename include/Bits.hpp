@@ -20,18 +20,18 @@
 namespace isa {
 namespace OpenCL {
 
-inline void getBit(std::string & code, const std::string & value, const std::string & bit);
-inline void setBit(std::string & code, const std::string & value, const std::string & newBit, const std::string & bit);
+inline std::string getBit(const std::string & value, const std::string & bit);
+inline std::string setBit(const std::string & value, const std::string & newBit, const std::string & bit);
 
 
 // Implementations
 
-inline void getBit(std::string & code, const std::string & value, const std::string & bit) {
-  code += "convert_uchar((" + value + " >> (" + bit + ")) & 1)";
+inline std::string getBit(const std::string & value, const std::string & bit) {
+  return "convert_uchar((" + value + " >> (" + bit + ")) & 1)";
 }
 
-inline void setBit(std::string & code, const std::string & value, const std::string & newBit, const std::string & bit) {
-  code += value + " ^= (-(" + newBit + ") ^ " + value + ") & (1 << (" + bit + "));\n";
+inline std::string setBit(const std::string & value, const std::string & newBit, const std::string & bit) {
+  return value + " ^= (-(" + newBit + ") ^ " + value + ") & (1 << (" + bit + "));\n";
 }
 
 } // OpenCL
