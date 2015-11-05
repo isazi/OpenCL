@@ -27,7 +27,7 @@ inline std::string setBit(const std::string & value, const std::string & newBit,
 // Implementations
 
 inline std::string getBit(const std::string & value, const std::string & bit) {
-  return "convert_uchar((" + value + " >> (" + bit + ")) & 1)";
+  return "((" + value + " >> (" + bit + ")) & 1)";
 }
 
 inline std::string setBit(const std::string & value, const std::string & newBit, const std::string & bit) {
