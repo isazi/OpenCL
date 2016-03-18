@@ -88,7 +88,7 @@ inline void KernelConf::setNrThreadsD0(unsigned int threads) {
 }
 
 inline void KernelConf::setNrThreadsD1(unsigned int threads) {
-  nrThreadD1 = threads;
+  nrThreadsD1 = threads;
 }
 
 inline void KernelConf::setNrThreadsD2(unsigned int threads) {
@@ -100,11 +100,11 @@ inline void KernelConf::setNrItemsD0(unsigned int items) {
 }
 
 inline void KernelConf::setNrItemsD1(unsigned int items) {
-  nrItemsD1;
+  nrItemsD1 = items;
 }
 
 inline void KernelConf::setNrItemsD2(unsigned int items) {
-  nrItemsD2;
+  nrItemsD2 = items;
 }
 
 } // OpenCL
