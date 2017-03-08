@@ -1,7 +1,7 @@
 
 SOURCE_ROOT ?= $(HOME)
 
-UTILS := $(SOURCE_ROOT)/src/utils
+UTILS := $(SOURCE_ROOT)/utils
 
 CC := g++
 CFLAGS := -std=c++11 -Wall
