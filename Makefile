@@ -5,10 +5,10 @@ UTILS := $(SOURCE_ROOT)/src/utils
 
 CC := g++
 CFLAGS := -std=c++11 -Wall
-ifneq ($(DEBUG), 1)
-	CFLAGS += -O3 -g0
-else
+ifdef DEBUG
 	CFLAGS += -O0 -g3
+else
+	CFLAGS += -O3 -g0
 endif
 
 
