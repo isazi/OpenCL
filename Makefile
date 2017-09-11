@@ -31,5 +31,5 @@ clean:
 	-@rm lib/*
 
 install: all
-	-@cp include/* $(SOURCE_ROOT)/include
+	-@cp include/*.hpp $(SOURCE_ROOT)/include
 	-@cp lib/* $(SOURCE_ROOT)/lib
