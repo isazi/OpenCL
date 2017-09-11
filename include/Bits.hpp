@@ -14,8 +14,8 @@
 
 #include <string>
 
-#ifndef BITS_HPP
-#define BITS_HPP
+
+#pragma once
 
 namespace isa {
 namespace OpenCL {
@@ -36,6 +36,4 @@ inline std::string setBit(const std::string & value, const std::string & newBit,
 
 } // OpenCL
 } // isa
-
-#endif // BITS_HPP
 

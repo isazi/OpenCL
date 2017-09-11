@@ -17,13 +17,12 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <Exceptions.hpp>
 #include <utils.hpp>
 
+#include "Exceptions.hpp"
 
-#ifndef KERNEL_HPP
-#define KERNEL_HPP
+
+#pragma once
 
 namespace isa {
 namespace OpenCL {
@@ -109,6 +108,4 @@ inline void KernelConf::setNrItemsD2(unsigned int items) {
 
 } // OpenCL
 } // isa
-
-#endif // KERNEL_HPP
 

@@ -15,13 +15,12 @@
 #define __CL_ENABLE_EXCEPTIONS
 #include <CL/cl.hpp>
 #include <vector>
-
 #include <utils.hpp>
-#include <Exceptions.hpp>
+
+#include "<Exceptions.hpp"
 
 
-#ifndef INITIALIZE_OPENCL_HPP
-#define INITIALIZE_OPENCL_HPP
+#pragma once
 
 namespace isa {
 namespace OpenCL {
@@ -30,6 +29,4 @@ void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector<
 
 } // OpenCL
 } // isa
-
-#endif // INITIALIZE_OPENCL_HPP
 

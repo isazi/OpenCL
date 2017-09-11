@@ -16,8 +16,7 @@
 #include <exception>
 #include <typeinfo>
 
-#ifndef EXCEPTIONS_HPP
-#define EXCEPTIONS_HPP
+#pragma once
 
 namespace isa {
 namespace OpenCL {
@@ -36,5 +35,4 @@ private:
 
 } // OpenCL
 } // isa
-#endif
 
