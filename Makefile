@@ -1,5 +1,6 @@
 
 INSTALL_ROOT ?= $(HOME)
+INCLUDES := -I"include" -I"$(INSTALL_ROOT)/include"
 
 CC := g++
 CFLAGS := -std=c++11 -Wall
@@ -16,15 +17,15 @@ all: bin/Exceptions.o bin/InitializeOpenCL.o bin/Kernel.o
 
 bin/Exceptions.o: include/Exceptions.hpp src/Exceptions.cpp
 	-@mkdir -p bin
-	$(CC) -o bin/Exceptions.o -c -fpic src/Exceptions.cpp -I"include" $(CFLAGS)
+	$(CC) -o bin/Exceptions.o -c -fpic src/Exceptions.cpp $(INCLUDES) $(CFLAGS)
 
 bin/InitializeOpenCL.o: $(INSTALL_ROOT)/include/utils.hpp include/Exceptions.hpp include/InitializeOpenCL.hpp src/InitializeOpenCL.cpp
 	-@mkdir -p bin
-	$(CC) -o bin/InitializeOpenCL.o -c -fpic src/InitializeOpenCL.cpp -I"include" -I"$(INSTALL_ROOT)/include" $(CFLAGS)
+	$(CC) -o bin/InitializeOpenCL.o -c -fpic src/InitializeOpenCL.cpp $(INCLUDES) $(CFLAGS)
 
 bin/Kernel.o: $(INSTALL_ROOT)/include/utils.hpp include/Exceptions.hpp include/Kernel.hpp src/Kernel.cpp
 	-@mkdir -p bin
-	$(CC) -o bin/Kernel.o -c -fpic src/Kernel.cpp -I"include" -I"$(INSTALL_ROOT)/include" $(CFLAGS)
+	$(CC) -o bin/Kernel.o -c -fpic src/Kernel.cpp $(INCLUDES) $(CFLAGS)
 
 clean:
 	-@rm bin/*.o
