@@ -4,12 +4,12 @@ INCLUDES := -I"include" -I"$(INSTALL_ROOT)/include"
 
 CC := g++
 CFLAGS := -std=c++11 -Wall
+
 ifdef DEBUG
 	CFLAGS += -O0 -g3
 else
 	CFLAGS += -O3 -g0
 endif
-
 
 all: bin/Exceptions.o bin/InitializeOpenCL.o bin/Kernel.o
 	-@mkdir -p lib
