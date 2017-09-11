@@ -12,7 +12,7 @@ endif
 
 all: bin/Exceptions.o bin/InitializeOpenCL.o bin/Kernel.o
 	-@mkdir -p lib
-	$(CC) -o lib/libisaOpenCL.so -shared -Wl,-soname,libisaOpenCL.so bin/Exceptions.so bin/InitializeOpenCL.o bin/Kernel.o $(CFLAGS)
+	$(CC) -o lib/libisaOpenCL.so -shared -Wl,-soname,libisaOpenCL.so bin/Exceptions.o bin/InitializeOpenCL.o bin/Kernel.o $(CFLAGS)
 
 bin/Exceptions.o: include/Exceptions.hpp src/Exceptions.cpp
 	-@mkdir -p bin
