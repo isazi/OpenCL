@@ -32,5 +32,7 @@ clean:
 	-@rm lib/*
 
 install: all
+	-@mkdir -p $(INSTALL_ROOT)/include
 	-@cp include/*.hpp $(INSTALL_ROOT)/include
+	-@mkdir -p $(INSTALL_ROOT)/lib
 	-@cp lib/* $(INSTALL_ROOT)/lib
