@@ -54,7 +54,7 @@ private:
   unsigned int nrItemsD0, nrItemsD1, nrItemsD2;
 };
 
-cl::Kernel * compile(const std::string & name, const std::string & code, const std::string & flags, cl::Context & clContext, cl::Device & clDevice) throw (isa::OpenCL::OpenCLError);
+cl::Kernel * compile(const std::string & name, const std::string & code, const std::string & flags, cl::Context & clContext, cl::Device & clDevice);
 
 
 // Implementations

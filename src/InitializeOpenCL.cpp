@@ -17,7 +17,7 @@
 namespace isa {
 namespace OpenCL {
 
-void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector< cl::Platform > * platforms, cl::Context * context, std::vector< cl::Device > * devices, std::vector< std::vector< cl::CommandQueue > > * queues) throw (isa::OpenCL::OpenCLError) {
+void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector<cl::Platform> * platforms, cl::Context * context, std::vector<cl::Device> * devices, std::vector<std::vector<cl::CommandQueue>> * queues) {
 	try {
 		unsigned int nrDevices = 0;
 
@@ -34,7 +34,7 @@ void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector<
 			}
 		}
 	}	catch ( cl::Error & e ) {
-		throw isa::OpenCL::OpenCLError("Impossible to initialize OpenCL: " + isa::utils::toString(e.err()) + ".");
+		throw isa::OpenCL::OpenCLError("ERROR: impossible to initialize OpenCL \"" + isa::utils::toString(e.err()) + "\"");
 	}
 }
 

@@ -17,11 +17,11 @@
 namespace isa {
 namespace OpenCL {
 
-OpenCLError::OpenCLError(std::string message) : message(message) {}
+OpenCLError::OpenCLError(const std::string & message) : message(message) {}
 	
-OpenCLError::~OpenCLError() throw () {}
+OpenCLError::~OpenCLError() {}
 
-const char * OpenCLError::what() const throw () {
+const char * OpenCLError::what() const noexcept {
   return (this->message).c_str();
 }
 

@@ -24,10 +24,10 @@ namespace OpenCL {
 // Generic OpenCL exception to incapsulate the error message
 class OpenCLError : public std::exception {
 public:
-	OpenCLError(std::string message);
-	~OpenCLError() throw ();
+	explicit OpenCLError(const std::string & message);
+	~OpenCLError();
 
-	const char *what() const throw ();
+	const char *what() const noexcept;
 
 private:
   std::string message;
