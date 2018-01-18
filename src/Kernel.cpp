@@ -22,7 +22,7 @@ KernelConf::KernelConf() : nrThreadsD0(1), nrThreadsD1(1), nrThreadsD2(1), nrIte
 KernelConf::~KernelConf() {}
 
 std::string KernelConf::print() const {
-  return isa::utils::toString(nrThreadsD0) + " " + isa::utils::toString(nrThreadsD1) + " " + isa::utils::toString(nrThreadsD2) + " " + isa::utils::toString(nrItemsD0) + " " + isa::utils::toString(nrItemsD1) + " " + isa::utils::toString(nrItemsD2);
+  return std::to_string(nrThreadsD0) + " " + std::to_string(nrThreadsD1) + " " + std::to_string(nrThreadsD2) + " " + std::to_string(nrItemsD0) + " " + std::to_string(nrItemsD1) + " " + std::to_string(nrItemsD2);
 }
 
 cl::Kernel * compile(const std::string & name, const std::string & code, const std::string & flags, cl::Context & clContext, cl::Device & clDevice) {
@@ -39,7 +39,7 @@ cl::Kernel * compile(const std::string & name, const std::string & code, const s
     kernel = new cl::Kernel(*program, name.c_str(), NULL);
     delete program;
   } catch ( cl::Error &err ) {
-    throw isa::OpenCL::OpenCLError("ERROR: OpenCL kernel error \"" + isa::utils::toString<cl_int>(err.err()) + "\"");
+    throw isa::OpenCL::OpenCLError("ERROR: OpenCL kernel error \"" + std::to_string<cl_int>(err.err()) + "\"");
   }
 
   return kernel;
