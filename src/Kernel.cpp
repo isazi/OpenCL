@@ -39,7 +39,7 @@ cl::Kernel * compile(const std::string & name, const std::string & code, const s
     kernel = new cl::Kernel(*program, name.c_str(), NULL);
     delete program;
   } catch ( cl::Error &err ) {
-    throw isa::OpenCL::OpenCLError("ERROR: OpenCL kernel error \"" + std::to_string<cl_int>(err.err()) + "\"");
+    throw isa::OpenCL::OpenCLError("ERROR: OpenCL kernel error \"" + std::to_string(err.err()) + "\"");
   }
 
   return kernel;
