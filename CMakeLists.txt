@@ -11,7 +11,7 @@ add_library(isa_opencl SHARED
   src/InitializeOpenCL.cpp
   src/Kernel.cpp
 )
-set_target_properties(isa_opencl PROPERTIES 
+set_target_properties(isa_opencl PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION 1
   PUBLIC_HEADER "include/Bits.hpp;include/Exceptions.hpp;include/InitializeOpenCL.hpp;include/Kernel.hpp"
