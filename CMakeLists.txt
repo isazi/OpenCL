@@ -6,11 +6,18 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -mtune=native")
 
 # libisa_opencl
-add_library(isa_opencl SHARED
+set(LIBRARY_SOURCE
   src/Exceptions.cpp
   src/InitializeOpenCL.cpp
   src/Kernel.cpp
 )
+set(LIBRARY_HEADER
+  include/Bits.hpp
+  include/Exceptions.hpp
+  include/InitializeOpenCL.hpp
+  include/Kernel.hpp
+)
+add_library(isa_opencl SHARED ${LIBRARY_SOURCE} ${LIBRARY_HEADER})
 set_target_properties(isa_opencl PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION 1
