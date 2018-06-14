@@ -14,37 +14,46 @@
 
 #include <Kernel.hpp>
 
-namespace isa {
-namespace OpenCL {
+namespace isa
+{
+namespace OpenCL
+{
 
 KernelConf::KernelConf() : nrThreadsD0(1), nrThreadsD1(1), nrThreadsD2(1), nrItemsD0(1), nrItemsD1(1), nrItemsD2(1) {}
 
 KernelConf::~KernelConf() {}
 
-std::string KernelConf::print() const {
-  return std::to_string(nrThreadsD0) + " " + std::to_string(nrThreadsD1) + " " + std::to_string(nrThreadsD2) + " " + std::to_string(nrItemsD0) + " " + std::to_string(nrItemsD1) + " " + std::to_string(nrItemsD2);
+std::string KernelConf::print() const
+{
+    return std::to_string(nrThreadsD0) + " " + std::to_string(nrThreadsD1) + " " + std::to_string(nrThreadsD2) + " " + std::to_string(nrItemsD0) + " " + std::to_string(nrItemsD1) + " " + std::to_string(nrItemsD2);
 }
 
-cl::Kernel * compile(const std::string & name, const std::string & code, const std::string & flags, cl::Context & clContext, cl::Device & clDevice) {
-  cl::Program * program = 0;
-  cl::Kernel * kernel = 0;
-  try {
-    cl::Program::Sources sources(1, std::make_pair(code.c_str(), code.length()));
-    program = new cl::Program(clContext, sources, NULL);
-    program->build(std::vector<cl::Device>(1, clDevice), flags.c_str(), NULL, NULL);
-  } catch ( cl::Error & err ) {
-    throw isa::OpenCL::OpenCLError("ERROR: OpenCL build error \"" + program->getBuildInfo<CL_PROGRAM_BUILD_LOG>(clDevice) + "\"");
-  }
-  try {
-    kernel = new cl::Kernel(*program, name.c_str(), NULL);
-    delete program;
-  } catch ( cl::Error &err ) {
-    throw isa::OpenCL::OpenCLError("ERROR: OpenCL kernel error \"" + std::to_string(err.err()) + "\"");
-  }
+cl::Kernel *compile(const std::string &name, const std::string &code, const std::string &flags, cl::Context &clContext, cl::Device &clDevice)
+{
+    cl::Program *program = 0;
+    cl::Kernel *kernel = 0;
+    try
+    {
+        cl::Program::Sources sources(1, std::make_pair(code.c_str(), code.length()));
+        program = new cl::Program(clContext, sources, NULL);
+        program->build(std::vector<cl::Device>(1, clDevice), flags.c_str(), NULL, NULL);
+    }
+    catch (cl::Error &err)
+    {
+        throw isa::OpenCL::OpenCLError("ERROR: OpenCL build error (" + name + ") \"" + program->getBuildInfo<CL_PROGRAM_BUILD_LOG>(clDevice) + "\"");
+    }
+    try
+    {
+        kernel = new cl::Kernel(*program, name.c_str(), NULL);
+        delete program;
+    }
+    catch (cl::Error &err)
+    {
+        throw isa::OpenCL::OpenCLError("ERROR: OpenCL kernel error (" + name + ") \"" + std::to_string(err.err()) + "\"");
+    }
 
-  return kernel;
+    return kernel;
 }
 
-} // OpenCL
-} // isa
-
+} // namespace OpenCL
+} // namespace isa
