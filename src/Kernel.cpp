@@ -19,7 +19,7 @@ namespace isa
 namespace OpenCL
 {
 
-KernelConf::KernelConf() : nrThreadsD0(1), nrThreadsD1(1), nrThreadsD2(1), nrItemsD0(1), nrItemsD1(1), nrItemsD2(1) {}
+KernelConf::KernelConf() : intType(), nrThreadsD0(1), nrThreadsD1(1), nrThreadsD2(1), nrItemsD0(1), nrItemsD1(1), nrItemsD2(1) {}
 
 KernelConf::~KernelConf() {}
 

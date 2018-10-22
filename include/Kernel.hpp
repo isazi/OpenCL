@@ -34,6 +34,7 @@ class KernelConf
     KernelConf();
     ~KernelConf();
     // Get
+    inline std::string getIntType() const;
     inline unsigned int getNrThreadsD0() const;
     inline unsigned int getNrThreadsD1() const;
     inline unsigned int getNrThreadsD2() const;
@@ -41,6 +42,7 @@ class KernelConf
     inline unsigned int getNrItemsD1() const;
     inline unsigned int getNrItemsD2() const;
     // Set
+    inline void setIntType(std::string &type);
     inline void setNrThreadsD0(unsigned int threads);
     inline void setNrThreadsD1(unsigned int threads);
     inline void setNrThreadsD2(unsigned int threads);
@@ -51,6 +53,7 @@ class KernelConf
     std::string print() const;
 
   private:
+    std::string intType;
     unsigned int nrThreadsD0, nrThreadsD1, nrThreadsD2;
     unsigned int nrItemsD0, nrItemsD1, nrItemsD2;
 };
@@ -58,6 +61,11 @@ class KernelConf
 cl::Kernel *compile(const std::string &name, const std::string &code, const std::string &flags, cl::Context &clContext, cl::Device &clDevice);
 
 // Implementations
+inline std::string KernelConf::getIntType() const
+{
+    return intType;
+}
+
 inline unsigned int KernelConf::getNrThreadsD0() const
 {
     return nrThreadsD0;
@@ -86,6 +94,11 @@ inline unsigned int KernelConf::getNrItemsD1() const
 inline unsigned int KernelConf::getNrItemsD2() const
 {
     return nrItemsD2;
+}
+
+inline void KernelConf::setIntType(std::string &type)
+{
+    intType = type;
 }
 
 inline void KernelConf::setNrThreadsD0(unsigned int threads)
