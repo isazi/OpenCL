@@ -42,7 +42,7 @@ class KernelConf
     inline unsigned int getNrItemsD1() const;
     inline unsigned int getNrItemsD2() const;
     // Set
-    inline void setIntType(std::string &type);
+    inline void setIntType(std::string type);
     inline void setNrThreadsD0(unsigned int threads);
     inline void setNrThreadsD1(unsigned int threads);
     inline void setNrThreadsD2(unsigned int threads);
@@ -96,7 +96,7 @@ inline unsigned int KernelConf::getNrItemsD2() const
     return nrItemsD2;
 }
 
-inline void KernelConf::setIntType(std::string &type)
+inline void KernelConf::setIntType(std::string type)
 {
     intType = type;
 }
