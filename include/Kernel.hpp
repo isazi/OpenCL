@@ -42,7 +42,14 @@ class KernelConf
     inline unsigned int getNrItemsD1() const;
     inline unsigned int getNrItemsD2() const;
     // Set
-    inline void setIntType(std::string type);
+    /***
+     ** @brief Set the integer type to use in the kernel.
+     **
+     ** This type is not the one associated with data, but the one for internal variables.
+     **
+     ** @param[in] type Integer representing the type: 0 is "int", 1 is "unsigned int".
+     */
+    inline void setIntType(unsigned int type);
     inline void setNrThreadsD0(unsigned int threads);
     inline void setNrThreadsD1(unsigned int threads);
     inline void setNrThreadsD2(unsigned int threads);
@@ -53,9 +60,9 @@ class KernelConf
     std::string print() const;
 
   private:
-    std::string intType;
     unsigned int nrThreadsD0, nrThreadsD1, nrThreadsD2;
     unsigned int nrItemsD0, nrItemsD1, nrItemsD2;
+    unsigned int intType;
 };
 
 cl::Kernel *compile(const std::string &name, const std::string &code, const std::string &flags, cl::Context &clContext, cl::Device &clDevice);
@@ -63,7 +70,15 @@ cl::Kernel *compile(const std::string &name, const std::string &code, const std:
 // Implementations
 inline std::string KernelConf::getIntType() const
 {
-    return intType;
+    if ( intType == 0 )
+    {
+        return "int";
+    }
+    else if ( intType == 1 )
+    {
+        return "unsigned int";
+    }
+    return "int";
 }
 
 inline unsigned int KernelConf::getNrThreadsD0() const
@@ -96,7 +111,7 @@ inline unsigned int KernelConf::getNrItemsD2() const
     return nrItemsD2;
 }
 
-inline void KernelConf::setIntType(std::string type)
+inline void KernelConf::setIntType(unsigned int type)
 {
     intType = type;
 }

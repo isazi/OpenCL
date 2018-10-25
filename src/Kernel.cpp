@@ -19,13 +19,13 @@ namespace isa
 namespace OpenCL
 {
 
-KernelConf::KernelConf() : intType(), nrThreadsD0(1), nrThreadsD1(1), nrThreadsD2(1), nrItemsD0(1), nrItemsD1(1), nrItemsD2(1) {}
+KernelConf::KernelConf() : nrThreadsD0(1), nrThreadsD1(1), nrThreadsD2(1), nrItemsD0(1), nrItemsD1(1), nrItemsD2(1), intType(0) {}
 
 KernelConf::~KernelConf() {}
 
 std::string KernelConf::print() const
 {
-    return std::to_string(nrThreadsD0) + " " + std::to_string(nrThreadsD1) + " " + std::to_string(nrThreadsD2) + " " + std::to_string(nrItemsD0) + " " + std::to_string(nrItemsD1) + " " + std::to_string(nrItemsD2);
+    return std::to_string(nrThreadsD0) + " " + std::to_string(nrThreadsD1) + " " + std::to_string(nrThreadsD2) + " " + std::to_string(nrItemsD0) + " " + std::to_string(nrItemsD1) + " " + std::to_string(nrItemsD2) + " " + std::to_string(intType);
 }
 
 cl::Kernel *compile(const std::string &name, const std::string &code, const std::string &flags, cl::Context &clContext, cl::Device &clDevice)
