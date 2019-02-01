@@ -25,8 +25,25 @@
 namespace isa {
 namespace OpenCL {
 
-void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector<cl::Platform> * platforms, cl::Context * context, std::vector<cl::Device> * devices, std::vector<std::vector<cl::CommandQueue>> * queues);
+/**
+ ** @brief Data structure holding all the OpenCL runtime objects.
+ */
+struct OpenCLRunTime
+{
+    cl::Context * context = nullptr;
+    std::vector<cl::Platform> * platforms = nullptr;
+    std::vector<cl::Device> * devices = nullptr;
+    std::vector<std::vector<cl::CommandQueue>> * queues = nullptr;
+};
+
+/**
+ ** @brief Initialize OpenCL environment.
+ **
+ ** @param platform OpenCL platform ID.
+ ** @param nrQueues Number of queues to initialize per device.
+ ** @param openclRuntime OpenCL object to initialize.
+ */
+void initializeOpenCL(const unsigned int platform, const unsigned int nrQueues, OpenCLRunTime &openclRuntime);
 
 } // OpenCL
 } // isa
-
