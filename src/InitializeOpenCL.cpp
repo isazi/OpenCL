@@ -22,6 +22,7 @@ void initializeOpenCL(const unsigned int platform, const unsigned int nrQueues, 
 	try
     {
 		std::uint64_t nrDevices = 0;
+		openclRuntime.context = new cl::Context;
 		cl::Platform::get(openclRuntime.platforms);
 		cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(openclRuntime.platforms->at(platform))(), 0};
 		*(openclRuntime.context) = cl::Context(CL_DEVICE_TYPE_ALL, properties);
