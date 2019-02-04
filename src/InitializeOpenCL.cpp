@@ -28,6 +28,7 @@ void initializeOpenCL(const unsigned int platform, const unsigned int nrQueues, 
 		*(openclRuntime.context) = cl::Context(CL_DEVICE_TYPE_ALL, properties);
 		*(openclRuntime.devices) = openclRuntime.context->getInfo<CL_CONTEXT_DEVICES>();
 		nrDevices = openclRuntime.devices->size();
+		openclRuntime.queues = new std::vector< std::vector < cl::CommandQueue > >();
 		for ( unsigned int device = 0; device < nrDevices; device++ )
         {
 			openclRuntime.queues->push_back(std::vector< cl::CommandQueue >());
