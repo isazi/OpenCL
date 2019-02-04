@@ -23,12 +23,14 @@ void initializeOpenCL(const unsigned int platform, const unsigned int nrQueues, 
     {
 		std::uint64_t nrDevices = 0;
 		openclRuntime.context = new cl::Context;
+		openclRuntime.platforms = new std::vector< cl::Platform >();
+		openclRuntime.devices = new std::vector< cl::Device >();
+		openclRuntime.queues = new std::vector< std::vector < cl::CommandQueue > >();
 		cl::Platform::get(openclRuntime.platforms);
 		cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(openclRuntime.platforms->at(platform))(), 0};
 		*(openclRuntime.context) = cl::Context(CL_DEVICE_TYPE_ALL, properties);
 		*(openclRuntime.devices) = openclRuntime.context->getInfo<CL_CONTEXT_DEVICES>();
 		nrDevices = openclRuntime.devices->size();
-		openclRuntime.queues = new std::vector< std::vector < cl::CommandQueue > >();
 		for ( unsigned int device = 0; device < nrDevices; device++ )
         {
 			openclRuntime.queues->push_back(std::vector< cl::CommandQueue >());
