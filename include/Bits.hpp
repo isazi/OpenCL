@@ -17,23 +17,29 @@
 
 #pragma once
 
-namespace isa {
-namespace OpenCL {
-
-inline std::string getBit(const std::string & value, const std::string & bit);
-inline std::string setBit(const std::string & value, const std::string & newBit, const std::string & bit);
-
-
-// Implementations
-
-inline std::string getBit(const std::string & value, const std::string & bit) {
-  return "((" + value + " >> (" + bit + ")) & 1)";
-}
-
-inline std::string setBit(const std::string & value, const std::string & newBit, const std::string & bit) {
-  return value + " ^= (-(" + newBit + ") ^ " + value + ") & (1 << (" + bit + "));\n";
-}
-
+namespace isa
+{
+namespace OpenCL
+{
+/**
+ ** @brief Return the OpenCL code to read a single bit.
+ **
+ ** @param value The name of the variable containing the bit to read.
+ ** @param bit A number representing the position of the bit to read.
+ **
+ ** @return A string containing the OpenCL code.
+ */
+std::string getBit(const std::string & value, const std::string & bit);
+/**
+ ** @brief Return the OpenCL code to write a single bit.
+ **
+ ** @param value The name of the variable containing the bit to write.
+ ** @param newBit The new value for the bit.
+ ** @param bit A number representing the position of the bit to write.
+ **
+ ** @return A string containing the OpenCL code.
+ */
+std::string setBit(const std::string & value, const std::string & newBit, const std::string & bit);
 } // OpenCL
 } // isa
 

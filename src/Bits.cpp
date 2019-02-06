@@ -1,4 +1,4 @@
-// Copyright 2015 Alessio Sclocco <a.sclocco@vu.nl>
+// Copyright 2015 Alessio Sclocco <alessio@sclocco.eu>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,19 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <Exceptions.hpp>
+#include <string>
 
-namespace isa {
-namespace OpenCL {
-
-OpenCLError::OpenCLError(const std::string & message) : message(message) {}
-	
-OpenCLError::~OpenCLError() {}
-
-const char * OpenCLError::what() const noexcept {
-  return (this->message).c_str();
+namespace isa
+{
+namespace OpenCL
+{
+inline std::string getBit(const std::string & value, const std::string & bit) {
+    return "((" + value + " >> (" + bit + ")) & 1)";
 }
 
+inline std::string setBit(const std::string & value, const std::string & newBit, const std::string & bit) {
+    return value + " ^= (-(" + newBit + ") ^ " + value + ") & (1 << (" + bit + "));\n";
+}
 } // OpenCL
 } // isa
-

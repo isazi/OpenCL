@@ -12,30 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#include <vector>
-#include <string>
-
-#include "Exceptions.hpp"
+#include "OpenCLTypes.hpp"
 
 
 #pragma once
 
-namespace isa {
-namespace OpenCL {
-
-/**
- ** @brief Data structure holding all the OpenCL runtime objects.
- */
-struct OpenCLRunTime
+namespace isa
 {
-    cl::Context * context = nullptr;
-    std::vector<cl::Platform> * platforms = nullptr;
-    std::vector<cl::Device> * devices = nullptr;
-    std::vector<std::vector<cl::CommandQueue>> * queues = nullptr;
-};
-
+namespace OpenCL
+{
 /**
  ** @brief Initialize OpenCL environment.
  **
@@ -44,6 +29,5 @@ struct OpenCLRunTime
  ** @param openclRuntime OpenCL object to initialize.
  */
 void initializeOpenCL(const unsigned int platform, const unsigned int nrQueues, OpenCLRunTime &openclRuntime);
-
 } // OpenCL
 } // isa

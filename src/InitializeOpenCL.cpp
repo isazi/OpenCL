@@ -16,7 +16,6 @@
 
 namespace isa {
 namespace OpenCL {
-
 void initializeOpenCL(const unsigned int platform, const unsigned int nrQueues, OpenCLRunTime &openclRuntime)
 {
 	try
@@ -45,7 +44,6 @@ void initializeOpenCL(const unsigned int platform, const unsigned int nrQueues, 
 		throw isa::OpenCL::OpenCLError("ERROR: impossible to initialize OpenCL \"" + std::to_string(err.err()) + "\"");
 	}
 }
-
 } // OpenCL
 } // isa
 
