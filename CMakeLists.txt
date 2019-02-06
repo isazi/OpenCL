@@ -7,7 +7,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -march=native -mtune=nat
 
 # libisa_opencl
 set(LIBRARY_SOURCE
-  src/Bits.cpp
   src/InitializeOpenCL.cpp
   src/Kernel.cpp
   src/OpenCLTypes.cpp
