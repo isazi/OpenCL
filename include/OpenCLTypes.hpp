@@ -24,6 +24,7 @@ namespace isa
 {
 namespace OpenCL
 {
+
 /**
  ** @brief Data structure containing all the necessary OpenCL runtime objects.
  */
@@ -38,7 +39,8 @@ struct OpenCLRunTime
 /**
  ** @brief OpenCL error.
  */
-class OpenCLError : public std::exception {
+class OpenCLError : public std::exception
+{
 public:
 	explicit OpenCLError(const std::string & message);
 	~OpenCLError();
@@ -62,26 +64,26 @@ class KernelConf
      **
      ** @return 0 for "int", 1 for "unsigned int".
      */
-    inline std::string getIntType() const;
-    inline unsigned int getNrThreadsD0() const;
-    inline unsigned int getNrThreadsD1() const;
-    inline unsigned int getNrThreadsD2() const;
-    inline unsigned int getNrItemsD0() const;
-    inline unsigned int getNrItemsD1() const;
-    inline unsigned int getNrItemsD2() const;
+    std::string getIntType() const;
+    unsigned int getNrThreadsD0() const;
+    unsigned int getNrThreadsD1() const;
+    unsigned int getNrThreadsD2() const;
+    unsigned int getNrItemsD0() const;
+    unsigned int getNrItemsD1() const;
+    unsigned int getNrItemsD2() const;
     /**
      ** @brief Set the integer type to use in the kernel.
      ** This type is not the one associated with data, but the one used for internal variables.
      **
      ** @param Integer representing the type: 0 is "int", 1 is "unsigned int".
      */
-    inline void setIntType(unsigned int type);
-    inline void setNrThreadsD0(unsigned int threads);
-    inline void setNrThreadsD1(unsigned int threads);
-    inline void setNrThreadsD2(unsigned int threads);
-    inline void setNrItemsD0(unsigned int items);
-    inline void setNrItemsD1(unsigned int items);
-    inline void setNrItemsD2(unsigned int items);
+    void setIntType(const unsigned int type);
+    void setNrThreadsD0(const unsigned int threads);
+    void setNrThreadsD1(const unsigned int threads);
+    void setNrThreadsD2(const unsigned int threads);
+    void setNrItemsD0(const unsigned int items);
+    void setNrItemsD1(const unsigned int items);
+    void setNrItemsD2(const unsigned int items);
     // utils
     std::string print() const;
 
@@ -89,6 +91,86 @@ class KernelConf
     unsigned int nrThreadsD0, nrThreadsD1, nrThreadsD2;
     unsigned int nrItemsD0, nrItemsD1, nrItemsD2;
     unsigned int intType;
+};
+
+/**
+ ** @brief Basic kernel tuning constraints.
+ */
+class TuningParameters
+{
+public:
+    TuningParameters();
+    ~TuningParameters();
+    /**
+     ** @brief Set the best mode to true or false.
+     ** The best mode is a tuning mode in which only the best configuration is returned by the tuner.
+     **
+     ** @param mode The value for the best mode, either true or false.
+     */
+    void setBestMode(const bool mode);
+    /**
+     ** @brief Retrieve the status of the best mode.
+     ** The best mode is a tuning mode in which only the best configuration is returned by the tuner.
+     **
+     ** @return The status of the best mode.
+     */
+    bool getBestMode() const;
+    /**
+     ** @brief Set the number of iterations for each kernel configuration.
+     **
+     ** @param iterations the number of iterations.
+     */
+    void setNrIterations(const unsigned int iterations);
+    /**
+     ** @brief Retrieve the number of iterations for each kernel configuration.
+     **
+     ** @return The number of iterations.
+     */
+    unsigned int getNrIterations() const;
+    /**
+     ** @brief Set the minimum number of threads to use.
+     **
+     ** @param threads The minimum number of threads.
+     */
+    void setMinThreads(const unsigned int threads);
+    /**
+     ** @brief Retrieve the minimum number of threads to use.
+     **
+     ** @return The minimum number of threads.
+     */
+    unsigned int getMinThreads() const;
+    /**
+     ** @brief Set the maximum number of threads to use.
+     **
+     ** @param threads The maximum number of threads.
+     */
+    void setMaxThreads(const unsigned int threads);
+    /**
+     ** @brief Retrieve the maximum number of threads to use.
+     **
+     ** @return The maximum number of threads.
+     */
+    unsigned int getMaxThreads() const;
+    /**
+     ** @brief Set the maximum number of items to declare per kernel.
+     ** Any variable allocated in the OpenCL code is one item.
+     **
+     ** @param items The maximum number of items.
+     */
+    void setMaxItems(const unsigned int items);
+    /**
+     ** @brief Retrieve the maximum number of items to use.
+     ** Any variable allocated in the OpenCL code is one item.
+     **
+     ** @return The maximum number of items.
+     */
+    unsigned int getMaxItems() const;
+private:
+    bool bestMode;
+    unsigned int nrIterations;
+    unsigned int minThreads;
+    unsigned int maxThreads;
+    unsigned int maxItems;
 };
 
 inline std::string KernelConf::print() const
@@ -139,39 +221,91 @@ inline unsigned int KernelConf::getNrItemsD2() const
     return nrItemsD2;
 }
 
-inline void KernelConf::setIntType(unsigned int type)
+inline void KernelConf::setIntType(const unsigned int type)
 {
     intType = type;
 }
 
-inline void KernelConf::setNrThreadsD0(unsigned int threads)
+inline void KernelConf::setNrThreadsD0(const unsigned int threads)
 {
     nrThreadsD0 = threads;
 }
 
-inline void KernelConf::setNrThreadsD1(unsigned int threads)
+inline void KernelConf::setNrThreadsD1(const unsigned int threads)
 {
     nrThreadsD1 = threads;
 }
 
-inline void KernelConf::setNrThreadsD2(unsigned int threads)
+inline void KernelConf::setNrThreadsD2(const unsigned int threads)
 {
     nrThreadsD2 = threads;
 }
 
-inline void KernelConf::setNrItemsD0(unsigned int items)
+inline void KernelConf::setNrItemsD0(const unsigned int items)
 {
     nrItemsD0 = items;
 }
 
-inline void KernelConf::setNrItemsD1(unsigned int items)
+inline void KernelConf::setNrItemsD1(const unsigned int items)
 {
     nrItemsD1 = items;
 }
 
-inline void KernelConf::setNrItemsD2(unsigned int items)
+inline void KernelConf::setNrItemsD2(const unsigned int items)
 {
     nrItemsD2 = items;
 }
+
+inline void TuningParameters::setBestMode(const bool mode)
+{
+    bestMode = mode;
+}
+
+inline bool TuningParameters::getBestMode() const
+{
+    return bestMode;
+}
+
+inline void TuningParameters::setNrIterations(const unsigned int iterations)
+{
+    nrIterations = iterations;
+}
+
+
+inline unsigned int TuningParameters::getNrIterations() const
+{
+    return nrIterations;
+}
+
+inline void TuningParameters::setMinThreads(const unsigned int threads)
+{
+    minThreads = threads;
+}
+
+inline unsigned int TuningParameters::getMinThreads() const
+{
+    return minThreads;
+}
+
+inline void TuningParameters::setMaxThreads(const unsigned int threads)
+{
+    maxThreads = threads;
+}
+
+inline unsigned int TuningParameters::getMaxThreads() const
+{
+    return maxThreads;
+}
+
+inline void TuningParameters::setMaxItems(const unsigned int items)
+{
+    maxItems = items;
+}
+
+inline unsigned int TuningParameters::getMaxItems() const
+{
+    return maxItems;
+}
+
 } // OpenCL
 } // isa
