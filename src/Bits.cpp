@@ -18,11 +18,11 @@ namespace isa
 {
 namespace OpenCL
 {
-inline std::string getBit(const std::string & value, const std::string & bit) {
+std::string getBit(const std::string & value, const std::string & bit) {
     return "((" + value + " >> (" + bit + ")) & 1)";
 }
 
-inline std::string setBit(const std::string & value, const std::string & newBit, const std::string & bit) {
+std::string setBit(const std::string & value, const std::string & newBit, const std::string & bit) {
     return value + " ^= (-(" + newBit + ") ^ " + value + ") & (1 << (" + bit + "));\n";
 }
 } // OpenCL

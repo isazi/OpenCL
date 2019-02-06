@@ -35,7 +35,7 @@ std::string KernelConf::print() const
     return std::to_string(nrThreadsD0) + " " + std::to_string(nrThreadsD1) + " " + std::to_string(nrThreadsD2) + " " + std::to_string(nrItemsD0) + " " + std::to_string(nrItemsD1) + " " + std::to_string(nrItemsD2) + " " + std::to_string(intType);
 }
 
-inline std::string KernelConf::getIntType() const
+std::string KernelConf::getIntType() const
 {
     if ( intType == 0 )
     {
@@ -48,67 +48,67 @@ inline std::string KernelConf::getIntType() const
     return "int";
 }
 
-inline unsigned int KernelConf::getNrThreadsD0() const
+unsigned int KernelConf::getNrThreadsD0() const
 {
     return nrThreadsD0;
 }
 
-inline unsigned int KernelConf::getNrThreadsD1() const
+unsigned int KernelConf::getNrThreadsD1() const
 {
     return nrThreadsD1;
 }
 
-inline unsigned int KernelConf::getNrThreadsD2() const
+unsigned int KernelConf::getNrThreadsD2() const
 {
     return nrThreadsD2;
 }
 
-inline unsigned int KernelConf::getNrItemsD0() const
+unsigned int KernelConf::getNrItemsD0() const
 {
     return nrItemsD0;
 }
 
-inline unsigned int KernelConf::getNrItemsD1() const
+unsigned int KernelConf::getNrItemsD1() const
 {
     return nrItemsD1;
 }
 
-inline unsigned int KernelConf::getNrItemsD2() const
+unsigned int KernelConf::getNrItemsD2() const
 {
     return nrItemsD2;
 }
 
-inline void KernelConf::setIntType(unsigned int type)
+void KernelConf::setIntType(unsigned int type)
 {
     intType = type;
 }
 
-inline void KernelConf::setNrThreadsD0(unsigned int threads)
+void KernelConf::setNrThreadsD0(unsigned int threads)
 {
     nrThreadsD0 = threads;
 }
 
-inline void KernelConf::setNrThreadsD1(unsigned int threads)
+void KernelConf::setNrThreadsD1(unsigned int threads)
 {
     nrThreadsD1 = threads;
 }
 
-inline void KernelConf::setNrThreadsD2(unsigned int threads)
+void KernelConf::setNrThreadsD2(unsigned int threads)
 {
     nrThreadsD2 = threads;
 }
 
-inline void KernelConf::setNrItemsD0(unsigned int items)
+void KernelConf::setNrItemsD0(unsigned int items)
 {
     nrItemsD0 = items;
 }
 
-inline void KernelConf::setNrItemsD1(unsigned int items)
+void KernelConf::setNrItemsD1(unsigned int items)
 {
     nrItemsD1 = items;
 }
 
-inline void KernelConf::setNrItemsD2(unsigned int items)
+void KernelConf::setNrItemsD2(unsigned int items)
 {
     nrItemsD2 = items;
 }
