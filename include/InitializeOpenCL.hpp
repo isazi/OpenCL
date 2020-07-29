@@ -1,4 +1,4 @@
-// Copyright 2011 Alessio Sclocco <a.sclocco@vu.nl>
+// Copyright 2011 Alessio Sclocco <alessio@sclocco.eu>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,21 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#define __CL_ENABLE_EXCEPTIONS
-#include <CL/cl.hpp>
-#include <vector>
-#include <utils.hpp>
-
-#include "Exceptions.hpp"
+#include "OpenCLTypes.hpp"
 
 
 #pragma once
 
-namespace isa {
-namespace OpenCL {
-
-void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector<cl::Platform> * platforms, cl::Context * context, std::vector<cl::Device> * devices, std::vector<std::vector<cl::CommandQueue>> * queues);
-
+namespace isa
+{
+namespace OpenCL
+{
+/**
+ ** @brief Initialize OpenCL environment.
+ **
+ ** @param platform OpenCL platform ID.
+ ** @param nrQueues Number of queues to initialize per device.
+ ** @param openclRuntime OpenCL object to initialize.
+ */
+void initializeOpenCL(const unsigned int platform, const unsigned int nrQueues, OpenCLRunTime &openclRuntime);
 } // OpenCL
 } // isa
-

@@ -16,28 +16,34 @@
 
 namespace isa {
 namespace OpenCL {
-
-void initializeOpenCL(unsigned int platform, unsigned int nrQueues, std::vector<cl::Platform> * platforms, cl::Context * context, std::vector<cl::Device> * devices, std::vector<std::vector<cl::CommandQueue>> * queues) {
-	try {
-		unsigned int nrDevices = 0;
-
-		cl::Platform::get(platforms);
-		cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(platforms->at(platform))(), 0};
-		*context = cl::Context(CL_DEVICE_TYPE_ALL, properties);
-
-		*devices = context->getInfo<CL_CONTEXT_DEVICES>();
-		nrDevices = devices->size();
-		for ( unsigned int device = 0; device < nrDevices; device++ ) {
-			queues->push_back(std::vector< cl::CommandQueue >());
-			for ( unsigned int queue = 0; queue < nrQueues; queue++ ) {
-				(queues->at(device)).push_back(cl::CommandQueue(*context, devices->at(device)));;
+void initializeOpenCL(const unsigned int platform, const unsigned int nrQueues, OpenCLRunTime &openclRuntime)
+{
+	try
+    {
+		std::uint64_t nrDevices = 0;
+		openclRuntime.context = new cl::Context;
+		openclRuntime.platforms = new std::vector< cl::Platform >();
+		openclRuntime.devices = new std::vector< cl::Device >();
+		openclRuntime.queues = new std::vector< std::vector < cl::CommandQueue > >();
+		cl::Platform::get(openclRuntime.platforms);
+		cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)(openclRuntime.platforms->at(platform))(), 0};
+		*(openclRuntime.context) = cl::Context(CL_DEVICE_TYPE_ALL, properties);
+		*(openclRuntime.devices) = openclRuntime.context->getInfo<CL_CONTEXT_DEVICES>();
+		nrDevices = openclRuntime.devices->size();
+		for ( unsigned int device = 0; device < nrDevices; device++ )
+        {
+			openclRuntime.queues->push_back(std::vector< cl::CommandQueue >());
+			for ( unsigned int queue = 0; queue < nrQueues; queue++ )
+            {
+				(openclRuntime.queues->at(device)).push_back(cl::CommandQueue(*(openclRuntime.context), openclRuntime.devices->at(device)));;
 			}
 		}
-	}	catch ( cl::Error & e ) {
-		throw isa::OpenCL::OpenCLError("ERROR: impossible to initialize OpenCL \"" + isa::utils::toString(e.err()) + "\"");
+	}
+    catch ( cl::Error &err )
+    {
+		throw isa::OpenCL::OpenCLError("ERROR: impossible to initialize OpenCL \"" + std::to_string(err.err()) + "\"");
 	}
 }
-
 } // OpenCL
 } // isa
 
