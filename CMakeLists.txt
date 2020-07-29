@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(isa::opencl VERSION 1.1)
+project(isa::opencl VERSION 1.5)
 include(GNUInstallDirs)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
